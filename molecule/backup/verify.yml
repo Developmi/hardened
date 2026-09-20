@@ -290,7 +290,17 @@
             inspect)
               case "$2" in
                 chatwoot|chatwoot-db)
-                  printf 'chatwoot_storage /app/storage\nundeclared_vol /secret/data\n' ;;
+                  # ENGINE-003-01: with the project-prefixed marker present the
+                  # stub reports the Compose-style RESOLVED name at the
+                  # DECLARED mount_path, so the volume happy path can be
+                  # exercised. Default (marker absent) keeps the literal
+                  # external name at a NON-matching destination, which is the
+                  # skip+log regression case asserted below.
+                  if [ -f "$log_dir/chatwoot-projectvol" ]; then
+                    printf 'chatwoot_chatwoot_storage /app/data\n'
+                  else
+                    printf 'chatwoot_storage /app/storage\nundeclared_vol /secret/data\n'
+                  fi ;;
                 quiesce-app|quiesce-app-db)
                   printf 'qvol /app/qdata\n' ;;
                 *)
@@ -346,6 +356,17 @@
           case "$1" in
             snapshots)
               printf '[{"short_id":"abc12345","id":"abc12345","time":"2026-09-10T00:00:00Z"}]\n'
+              exit 0
+              ;;
+            check)
+              # VERIFY-002-02: a failing integrity check must be observable.
+              # restic-check.service runs `/usr/local/bin/restic check` with no
+              # `|| true`, so a non-zero exit leaves the systemd unit failed
+              # (Result=exit-code). The default (marker absent) exits 0.
+              if [ -f "$log_dir/check-fail" ]; then
+                printf 'stub restic: repository corruption detected\n' >&2
+                exit 1
+              fi
               exit 0
               ;;
             cat)
@@ -545,6 +566,205 @@
         success_msg: "Tier1 discovery dumped postgres + valkey and ignored nginx"
 
     # ---------------------------------------------------------------------------
+    # TIER-001-03 "Tier1 pipeline complete": the Tier1 cycle is not only
+    # dump+upload (proven above) - it also runs RETENTION and VERIFICATION.
+    #   * retention    = the host-level `restic-prune.service`
+    #                    (`restic forget ... --prune`), the retention owner of
+    #                    the app-data repository;
+    #   * verification = the profile-derived restore-verification runner of a
+    #                    Tier1 asset (chatwoot declares the Tier1 monthly cadence
+    #                    per VERIFY-003).
+    # The host-level unit set is NOT deployed by converge: Molecule converges the
+    # ENGINE source path (backup_role_source=engine), and only the "stack" source
+    # deploys systemd.yml. The two units this cycle needs are therefore rendered
+    # here from the SHIPPED templates (the same source systemd.yml uses); the full
+    # systemd.yml cannot be included because it starts restic-backup-all.timer,
+    # whose service Requires=docker.service - absent inside this container. The
+    # real restic binary is absent too (backup_engine_install_restic=false), so
+    # the stub is exposed at restic_install_path for the units to execute.
+    # ---------------------------------------------------------------------------
+    - name: "TIER-001-03: Load the role defaults so the shipped unit templates resolve"
+      ansible.builtin.include_vars:
+        file: "{{ role_defaults_file }}"
+
+    - name: "TIER-001-03: Deploy the retention unit from the shipped template"
+      ansible.builtin.template:
+        src: "{{ role_templates_dir }}/restic-prune.service.j2"
+        dest: /etc/systemd/system/restic-prune.service
+        mode: "0644"
+
+    - name: "VERIFY-002-02: Deploy the integrity-check unit from the shipped template"
+      ansible.builtin.template:
+        src: "{{ role_templates_dir }}/restic-check.service.j2"
+        dest: /etc/systemd/system/restic-check.service
+        mode: "0644"
+
+    - name: "TIER-001-03: Reload systemd so the rendered host units are visible"
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: "TIER-001-03: Expose the restic stub at restic_install_path for the host units"
+      ansible.builtin.copy:
+        src: "{{ shim_dir }}/restic"
+        dest: /usr/local/bin/restic
+        remote_src: true
+        mode: "0755"
+
+    - name: "TIER-001-03: Reset the restic stub log for the retention run"
+      ansible.builtin.file:
+        path: "{{ shim_dir }}/restic.log"
+        state: absent
+
+    - name: "WHEN: The Tier1 retention unit runs (TIER-001-03)"
+      ansible.builtin.command:
+        cmd: systemctl start restic-prune.service
+      register: tier1_retention_start
+      changed_when: false
+      failed_when: false
+
+    - name: "GIVEN: Read the restic stub log after the Tier1 retention run"
+      ansible.builtin.command:
+        cmd: "cat {{ shim_dir }}/restic.log"
+      register: tier1_retention_log
+      changed_when: false
+      failed_when: false
+
+    - name: "THEN: Tier1 retention ran `restic forget --prune` (TIER-001-03)"
+      ansible.builtin.assert:
+        that:
+          - "'forget' in tier1_retention_log.stdout"
+          - "'--prune' in tier1_retention_log.stdout"
+        fail_msg: >-
+          The Tier1 cycle did not run retention (`restic forget --prune`).
+          rc={{ tier1_retention_start.rc }}
+          log={{ tier1_retention_log.stdout }}
+        success_msg: "Tier1 retention ran restic forget --prune (TIER-001-03)"
+
+    - name: "GIVEN: Ensure no restore-fail marker and clear prior restore evidence (TIER-001-03)"
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ shim_dir }}/restore-fail"
+        - /var/lib/backup-restore-verify/evidence/chatwoot.json
+
+    - name: "WHEN: The Tier1-asset restore-verification runner runs (TIER-001-03)"
+      ansible.builtin.command:
+        cmd: /usr/local/bin/backup-restore-verify-chatwoot.sh
+      environment:
+        PATH: "{{ shim_dir }}:{{ ansible_env.PATH }}"
+      register: tier1_verify_run
+      changed_when: false
+      failed_when: false
+
+    - name: "GIVEN: Stat the Tier1 restore evidence (TIER-001-03)"
+      ansible.builtin.stat:
+        path: /var/lib/backup-restore-verify/evidence/chatwoot.json
+      register: tier1_verify_evidence
+
+    - name: "THEN: Tier1 verification ran and recorded success evidence (TIER-001-03)"
+      ansible.builtin.assert:
+        that:
+          - tier1_verify_run.rc == 0
+          - tier1_verify_evidence.stat.exists
+        fail_msg: >-
+          The Tier1 verification leg did not run or record evidence
+          (TIER-001-03). rc={{ tier1_verify_run.rc }}
+          stderr={{ tier1_verify_run.stderr | default('') }}
+        success_msg: "Tier1 restore verification ran and recorded evidence (TIER-001-03)"
+
+    # ---------------------------------------------------------------------------
+    # VERIFY-002-02 "Integrity failure visible": `restic-check.service` runs
+    # `/usr/local/bin/restic check` with NO `|| true`, so a repository that fails
+    # the integrity check leaves the systemd unit failed. That recorded unit
+    # result (Result=exit-code / non-zero ExecMainStatus, visible in the journal)
+    # is how the real code surfaces the failure. The stub gains a `check` branch
+    # and a `check-fail` marker so this path is observable; the default (marker
+    # absent) exits 0. Before the stub branch, `check` fell through to `exit 0`
+    # and nothing could record a failure.
+    # ---------------------------------------------------------------------------
+    - name: "VERIFY-002-02: Force the stubbed `restic check` to fail"
+      ansible.builtin.copy:
+        dest: "{{ shim_dir }}/check-fail"
+        content: "corrupt\n"
+        mode: "0644"
+
+    - name: "VERIFY-002-02: Clear any prior failed state on the check unit"
+      ansible.builtin.command:
+        cmd: systemctl reset-failed restic-check.service
+      changed_when: false
+      failed_when: false
+
+    - name: "WHEN: The integrity-check unit runs against a failing repository (VERIFY-002-02)"
+      ansible.builtin.command:
+        cmd: systemctl start restic-check.service
+      register: integrity_check_failed_start
+      changed_when: false
+      failed_when: false
+
+    - name: "GIVEN: Read the recorded unit result after the failing check (VERIFY-002-02)"
+      ansible.builtin.command:
+        cmd: systemctl show -p Result --value restic-check.service
+      register: integrity_check_failed_result
+      changed_when: false
+      failed_when: false
+
+    - name: "GIVEN: Read the recorded exit status after the failing check (VERIFY-002-02)"
+      ansible.builtin.command:
+        cmd: systemctl show -p ExecMainStatus --value restic-check.service
+      register: integrity_check_failed_status
+      changed_when: false
+      failed_when: false
+
+    - name: "THEN: A failing integrity check is RECORDED and SURFACED, never swallowed (VERIFY-002-02)"
+      ansible.builtin.assert:
+        that:
+          - integrity_check_failed_result.stdout | trim == 'exit-code'
+          - integrity_check_failed_status.stdout | trim != '0'
+        fail_msg: >-
+          A failing `restic check` was swallowed by systemd:
+          start_rc={{ integrity_check_failed_start.rc }}
+          Result={{ integrity_check_failed_result.stdout | default('') | trim }}
+          ExecMainStatus={{ integrity_check_failed_status.stdout | default('') | trim }}
+        success_msg: "Failing integrity check recorded by systemd (Result=exit-code, non-zero status)"
+
+    - name: "GIVEN: Clear the check-fail marker and the recorded failed state"
+      ansible.builtin.file:
+        path: "{{ shim_dir }}/check-fail"
+        state: absent
+
+    - name: "GIVEN: Reset the failed check unit before the healthy run"
+      ansible.builtin.command:
+        cmd: systemctl reset-failed restic-check.service
+      changed_when: false
+      failed_when: false
+
+    - name: "WHEN: The integrity-check unit runs against a healthy repository (VERIFY-002-02)"
+      ansible.builtin.command:
+        cmd: systemctl start restic-check.service
+      register: integrity_check_healthy_start
+      changed_when: false
+      failed_when: false
+
+    - name: "GIVEN: Read the recorded unit result after the healthy check (VERIFY-002-02)"
+      ansible.builtin.command:
+        cmd: systemctl show -p Result --value restic-check.service
+      register: integrity_check_healthy_result
+      changed_when: false
+      failed_when: false
+
+    - name: "THEN: A healthy integrity check records success (VERIFY-002-02)"
+      ansible.builtin.assert:
+        that:
+          - integrity_check_healthy_start.rc == 0
+          - integrity_check_healthy_result.stdout | trim == 'success'
+        fail_msg: >-
+          A healthy `restic check` did not record success:
+          start_rc={{ integrity_check_healthy_start.rc }}
+          Result={{ integrity_check_healthy_result.stdout | default('') | trim }}
+        success_msg: "Healthy integrity check recorded success (VERIFY-002-02)"
+
+    # ---------------------------------------------------------------------------
     # TIER-002 (task 3.2): only declared volumes[] are backed up; an undeclared
     # volume reported by docker inspect is never touched.
     # ---------------------------------------------------------------------------
@@ -625,6 +845,143 @@
     - name: "GIVEN: Remove the tar-abort marker"
       ansible.builtin.file:
         path: "{{ shim_dir }}/tar-abort"
+        state: absent
+
+    # ---------------------------------------------------------------------------
+    # TIER-002-01 / ENGINE-002-01 / ENGINE-003-02 / ENGINE-005-02 - TIER2 VOLUME
+    # HAPPY PATH (positive coverage). Every other volume test is negative by
+    # construction: the chatwoot fixture deliberately mismatches mount_path
+    # (skip), and quiesce-app forces a tar abort. A regression that silently
+    # dropped volume uploads would therefore still pass them all. This run proves
+    # the tarball IS streamed into restic.
+    #
+    # quiesce-app declares volume `quiesce_data` at /app/qdata with
+    # consistency=quiesce; the docker stub reports the REAL volume name `qvol` at
+    # /app/qdata. resolve_volume() matches by mount_path, so the quiesce helper
+    # tars and streams `${app}_${volume}_${timestamp}.tar.gz` with tag
+    # `volume,${app}`. The resolved name (`qvol`) differs from the declared
+    # profile name (`quiesce_data`), which is the ENGINE-003 runtime-resolution
+    # proof: the name came from `docker inspect`, not from string-building.
+    # ---------------------------------------------------------------------------
+    - name: "GIVEN: Reset the restic stub log for the Tier2 volume HAPPY PATH run"
+      ansible.builtin.file:
+        path: "{{ shim_dir }}/restic.log"
+        state: absent
+
+    - name: "GIVEN: Ensure the tar-abort marker is absent (success path)"
+      ansible.builtin.file:
+        path: "{{ shim_dir }}/tar-abort"
+        state: absent
+
+    - name: "WHEN: Run the quiesce-app runner with a MATCHING mount_path and no tar abort"
+      ansible.builtin.command:
+        cmd: /usr/local/bin/backup-engine-quiesce-app.sh
+      environment:
+        PATH: "{{ shim_dir }}:{{ ansible_env.PATH }}"
+      register: tier2_happy_run
+      changed_when: false
+      failed_when: false
+
+    - name: "GIVEN: Read the restic stub log after the Tier2 volume HAPPY PATH run"
+      ansible.builtin.command:
+        cmd: "cat {{ shim_dir }}/restic.log"
+      register: tier2_happy_log
+      changed_when: false
+      failed_when: false
+
+    - name: "THEN: A declared volume is tarred and STREAMED into restic (TIER-002-01/ENGINE-005-02)"
+      ansible.builtin.assert:
+        that:
+          - tier2_happy_run.rc == 0
+          - "'volume,quiesce-app' in tier2_happy_log.stdout"
+          - >-
+            (tier2_happy_log.stdout | default('')) is search(
+            '--stdin-filename quiesce-app_qvol_[0-9]{8}_[0-9]{6}[.]tar[.]gz')
+        fail_msg: >-
+          A declared volume with a matching mount_path was NOT streamed into
+          restic (TIER-002-01/ENGINE-005-02). rc={{ tier2_happy_run.rc }}
+          log={{ tier2_happy_log.stdout }}
+        success_msg: "Declared volume tarred and streamed into restic (TIER-002-01/ENGINE-005-02)"
+
+    - name: "THEN: The declared database AND its volume are both backed up in one run (ENGINE-002-01)"
+      ansible.builtin.assert:
+        that:
+          - "'db,postgresql,quiesce-app' in tier2_happy_log.stdout"
+          - "'volume,quiesce-app' in tier2_happy_log.stdout"
+        fail_msg: >-
+          A profile declaring a database AND a volume did not back up both
+          (ENGINE-002-01). log={{ tier2_happy_log.stdout }}
+        success_msg: "Declared database and declared volume both backed up (ENGINE-002-01)"
+
+    - name: "THEN: The resolved volume name came from docker inspect, not the declared name (ENGINE-003-02)"
+      ansible.builtin.assert:
+        that:
+          - "'qvol' in tier2_happy_log.stdout"
+          - "'quiesce_data' not in tier2_happy_log.stdout"
+        fail_msg: >-
+          The volume name was not the one reported by `docker inspect`
+          (ENGINE-003-02): expected `qvol`, not the declared `quiesce_data`.
+          log={{ tier2_happy_log.stdout }}
+        success_msg: "Volume name resolved from docker inspect, not from the declared name (ENGINE-003-02)"
+
+    # ---------------------------------------------------------------------------
+    # ENGINE-003-01 - PROJECT-PREFIXED COMPOSE VOLUME. The spec's THEN is that
+    # chatwoot's Compose volume `chatwoot_storage` is backed up under its resolved
+    # `chatwoot_chatwoot_storage` name. The marker switches the docker stub's
+    # chatwoot `inspect` output to that resolved name at the DECLARED
+    # mount_path (/app/data); with the marker absent the stub keeps the literal
+    # external name at a non-matching destination, so the negative test above is
+    # untouched.
+    # ---------------------------------------------------------------------------
+    - name: "GIVEN: Simulate a project-prefixed Compose volume for chatwoot (ENGINE-003-01)"
+      ansible.builtin.copy:
+        dest: "{{ shim_dir }}/chatwoot-projectvol"
+        content: "project-prefixed\n"
+        mode: "0644"
+
+    - name: "GIVEN: Reset the restic stub log for the project-prefixed run"
+      ansible.builtin.file:
+        path: "{{ shim_dir }}/restic.log"
+        state: absent
+
+    - name: "WHEN: Run the chatwoot runner with the project-prefixed volume reported"
+      ansible.builtin.command:
+        cmd: /usr/local/bin/backup-engine-chatwoot.sh
+      environment:
+        PATH: "{{ shim_dir }}:{{ ansible_env.PATH }}"
+      register: chatwoot_projectvol_run
+      changed_when: false
+      failed_when: false
+
+    - name: "GIVEN: Read the restic stub log after the project-prefixed run"
+      ansible.builtin.command:
+        cmd: "cat {{ shim_dir }}/restic.log"
+      register: chatwoot_projectvol_log
+      changed_when: false
+      failed_when: false
+
+    # The streamed name is `${APP}_${volume}_${TIMESTAMP}.tar.gz`
+    # (backup-engine.sh.j2 backup_volume_live), so the resolved volume
+    # `chatwoot_chatwoot_storage` appears as
+    # `chatwoot_chatwoot_chatwoot_storage_<ts>.tar.gz`.
+    - name: "THEN: The project-prefixed Compose volume is resolved and backed up (ENGINE-003-01)"
+      ansible.builtin.assert:
+        that:
+          - chatwoot_projectvol_run.rc == 0
+          - "'volume,chatwoot' in chatwoot_projectvol_log.stdout"
+          - "'chatwoot_chatwoot_storage' in chatwoot_projectvol_log.stdout"
+          - >-
+            (chatwoot_projectvol_log.stdout | default('')) is search(
+            '--stdin-filename chatwoot_chatwoot_chatwoot_storage_[0-9]{8}_[0-9]{6}[.]tar[.]gz')
+        fail_msg: >-
+          The project-prefixed Compose volume was not resolved and streamed
+          (ENGINE-003-01). rc={{ chatwoot_projectvol_run.rc }}
+          log={{ chatwoot_projectvol_log.stdout }}
+        success_msg: "Project-prefixed volume resolved and streamed as chatwoot_chatwoot_storage (ENGINE-003-01)"
+
+    - name: "GIVEN: Remove the project-prefixed volume marker (restore the negative case)"
+      ansible.builtin.file:
+        path: "{{ shim_dir }}/chatwoot-projectvol"
         state: absent
 
     # ---------------------------------------------------------------------------
