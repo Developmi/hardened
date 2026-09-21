@@ -1,6 +1,6 @@
 ---
 # ==============================================================================
-# Developmi Stack | L6 Runtime Backup - Unified Engine
+# Developmi Hardened | L6 Runtime Backup - Unified Engine
 # ==============================================================================
 # One profile-declarative engine backs up every app on every backup host.
 # It replaces the retired backup-appdata.yml, backup-timers.yml and

@@ -6,8 +6,8 @@ audience: maintainer
 version: v6.0.0
 last-reviewed: 2026-07-16
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Release Procedure
@@ -119,7 +119,7 @@ Complete all automated checks. All must pass before proceeding.
 ### 4. Create Release Commit and Tag
 
 ```bash
-git commit -m "Release vX.Y.Z: Developmi Stack
+git commit -m "Release vX.Y.Z: Developmi Hardened
 
 Highlights:
 - [add release highlights]
@@ -132,7 +132,7 @@ Validation:
 
 See ../../CHANGELOG.md for full details."
 
-git tag -a vX.Y.Z -m "Developmi Stack vX.Y.Z"
+git tag -a vX.Y.Z -m "Developmi Hardened vX.Y.Z"
 git push origin release/vX.Y.Z
 git push origin vX.Y.Z
 ```
@@ -140,7 +140,7 @@ git push origin vX.Y.Z
 ### 5. Create GitHub Release
 
 1. Go to Releases → Create New Release
-2. Title: `Developmi Stack vX.Y.Z`
+2. Title: `Developmi Hardened vX.Y.Z`
 3. Notes: Copy the corresponding `CHANGELOG.md` section
 4. Set as latest release
 5. Save & publish

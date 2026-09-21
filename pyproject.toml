@@ -1,6 +1,6 @@
 [project]
-name = "developmi-stack"
-version = "6.0.0"
+name = "developmi-hardened"
+version = "v7.0.0"
 description = "Ansible-driven hardening suite for Bare Metal infrastructure"
 readme = "README.md"
 requires-python = ">=3.14"

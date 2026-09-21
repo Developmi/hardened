@@ -1,18 +1,18 @@
 ---
-title: Developmi Stack Glossary
+title: Developmi Hardened Glossary
 type: architecture
 owner: maintainers
 audience: all
 version: v6.0.0
 last-reviewed: 2026-07-31
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
-# Developmi Stack Glossary
+# Developmi Hardened Glossary
 
-A single source of truth for terminology used across the **Developmi Stack** (formerly stack). This consolidated glossary covers platform architecture, shared infrastructure, compliance frameworks, project governance, and our Spec-Driven Development (SDD) workflow.
+A single source of truth for terminology used across the **Developmi Hardened** (formerly stack). This consolidated glossary covers platform architecture, shared infrastructure, compliance frameworks, project governance, and our Spec-Driven Development (SDD) workflow.
 
 ---
 
@@ -44,7 +44,7 @@ Terms defining how nodes are classified, hardened, and operated within the infra
 
 ## 2. Infrastructure Layers & Topologies
 
-The Developmi Stack is segregated into a strict 7-layer architecture.
+The Developmi Hardened is segregated into a strict 7-layer architecture.
 
 **Layer 0 (Commercial Infra)**: Bare-metal/cloud provisioning with OpenTofu. See [ARCHITECTURE.md §1](../architecture/ARCHITECTURE.md).
 **Layer 1 (OS Baseline)**: Package manager, update/hold policies, auto-upgrade, OS detection, AMD64/ARM64 compatibility.

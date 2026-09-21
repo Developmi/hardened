@@ -7,14 +7,14 @@ version: v6.0.0
 last-reviewed: 2026-06-28
 status: accepted
 principles: 1 (Simplicity), 8 (Boundaries)
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 replaces: ADR-01 (superseded - ADR-07 expands and formalizes the same decision)
 ---
 
 ## 1. Context
 
-The Developmi Stack (v6.0.0) runs containerized workloads across heterogeneous environments - local workstations, single-server brain nodes, and multi-node clusters. In v5.5.0 (stack), Docker Compose and Portainer were implicitly coupled: deploying the runtime meant deploying both together, and removing Portainer was not a documented path.
+The Developmi Hardened (v6.0.0) runs containerized workloads across heterogeneous environments - local workstations, single-server brain nodes, and multi-node clusters. In v5.5.0 (stack), Docker Compose and Portainer were implicitly coupled: deploying the runtime meant deploying both together, and removing Portainer was not a documented path.
 
 We needed a runtime model where:
 

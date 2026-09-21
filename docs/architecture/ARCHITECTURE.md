@@ -1,18 +1,18 @@
 ---
-title: Architecture Overview - Developmi Stack
+title: Architecture Overview - Developmi Hardened
 type: architecture
 owner: maintainers
 audience: all
 version: v6.0.0
 last-reviewed: 2026-07-31
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
-# Architecture Overview - Developmi Stack v6.0.0
+# Architecture Overview - Developmi Hardened v6.0.0
 
-The Developmi Stack is a multi-layer Linux hardening and application deployment framework built on Ansible.
+The Developmi Hardened is a multi-layer Linux hardening and application deployment framework built on Ansible.
 It transforms vanilla Debian/Ubuntu servers into NIST 800-53 compliant bastion hosts
 with a 7-layer architecture that cleanly separates infrastructure provisioning (L0, private), OS hardening (L1-L4),
 application profiles (L5), and runtime adapters (L6).

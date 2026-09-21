@@ -6,8 +6,8 @@ audience: operator
 version: v6.0.0
 last-reviewed: 2026-07-16
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Emergency Access & Recovery Guide

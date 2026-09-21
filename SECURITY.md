@@ -24,7 +24,7 @@ status: complete
 
 Report vulnerabilities privately via one of these channels:
 
-- **GitHub Security Advisories:** [Report a vulnerability](https://github.com/Developmi/stack/security/advisories/new)
+- **GitHub Security Advisories:** [Report a vulnerability](https://github.com/Developmi/hardened/security/advisories/new)
 - **Email:** miguel@developmi.com - encrypt with PGP if the finding is critical.
 
 Include in your report:

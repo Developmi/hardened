@@ -6,8 +6,8 @@ audience: all
 version: v6.0.0
 last-reviewed: 2026-07-26
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Documentation Index
@@ -18,7 +18,7 @@ This folder centralizes project documentation by objective and operational domai
 
 ## Quick Start
 
-The Developmi Stack is an enterprise-grade Ansible hardening framework for NIST-aligned Debian and Ubuntu infrastructure. If you're new:
+The Developmi Hardened is an enterprise-grade Ansible hardening framework for NIST-aligned Debian and Ubuntu infrastructure. If you're new:
 
 - **I want to run this suite** → Start with the [root README](../README.md), then [OPERATIONS_RUNBOOK.md](operations/OPERATIONS_RUNBOOK.md)
 - **I want to contribute** → Start with [CONTRIBUTING.md](../CONTRIBUTING.md)

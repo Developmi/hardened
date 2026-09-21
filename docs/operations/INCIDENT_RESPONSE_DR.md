@@ -6,13 +6,13 @@ audience: operator
 version: v6.0.0
 last-reviewed: 2026-07-16
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Incident Response & Disaster Recovery Runbook
 
-This document is the Single Source of Truth (SSOT) for the incident response and disaster recovery (DR) procedures of the Developmi Stack. It covers RTO/RPO targets, server and application restoration steps, dependency order, secrets recovery, and drill protocols.
+This document is the Single Source of Truth (SSOT) for the incident response and disaster recovery (DR) procedures of the Developmi Hardened. It covers RTO/RPO targets, server and application restoration steps, dependency order, secrets recovery, and drill protocols.
 
 > [!NOTE]
 > This is a **RESTORE reference**. For backup configuration details (schedules, retention policies, backup commands, R2 bucket), see [BACKUP_STRATEGY.md](BACKUP_STRATEGY.md).

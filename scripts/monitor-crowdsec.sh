@@ -225,7 +225,7 @@ generate_json_report() {
 
 show_usage() {
     cat << EOF
-CrowdSec Monitoring Script - Developmi Stack
+CrowdSec Monitoring Script - Developmi Hardened
 
 Usage: $0 [OPTION]
 

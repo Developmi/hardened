@@ -1,6 +1,6 @@
 ---
 # ==============================================================================
-# Developmi Stack | NUKE PLAYBOOK
+# Developmi Hardened | NUKE PLAYBOOK
 # ==============================================================================
 # Purpose:
 #   Deterministic teardown of infrastructure managed by this repository.
@@ -35,7 +35,7 @@
 #   - In a Zero Trust setup, nuke/stacks operations must run over Tailscale.
 # ==============================================================================
 
-- name: Nuke Developmi Stack managed infrastructure
+- name: Nuke Developmi Hardened managed infrastructure
   hosts: all
   become: true
   gather_facts: true
@@ -46,7 +46,7 @@
       prompt: |
         DESTRUCTIVE OPERATION CONFIRMATION
 
-        This will remove infrastructure managed by the Developmi Stack,
+        This will remove infrastructure managed by the Developmi Hardened,
         including Docker stacks, VPN/security tooling, and app data.
 
         Type DESTROY_ALL_INFRASTRUCTURE to proceed:

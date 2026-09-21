@@ -6,15 +6,15 @@ audience: all
 version: v6.0.0-dev
 last-reviewed: 2026-07-23
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
-# Developmi Stack - Development Roadmap
+# Developmi Hardened - Development Roadmap
 
 ## Vision
 
-Consolidate the Developmi Stack as a practical, transparent, and auditable security baseline for hybrid infrastructure, keeping a balance between operational simplicity and compliance rigor.
+Consolidate the Developmi Hardened as a practical, transparent, and auditable security baseline for hybrid infrastructure, keeping a balance between operational simplicity and compliance rigor.
 
 ## Current Status (Verified from Git History)
 

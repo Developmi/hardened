@@ -6,13 +6,13 @@ audience: maintainer
 version: v6.0.0
 last-reviewed: 2026-07-16
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Compliance Mapping Status
 
-This master document serves as the Single Source of Truth (SSOT) and consolidated entry point for all compliance frameworks, security controls, and evidence verification procedures in the Developmi Stack.
+This master document serves as the Single Source of Truth (SSOT) and consolidated entry point for all compliance frameworks, security controls, and evidence verification procedures in the Developmi Hardened.
 
 ---
 
@@ -130,7 +130,7 @@ See [NIST_800_171.md](NIST/NIST_800_171.md) - mapping is pending. Overlapping co
 
 The ENS (Esquema Nacional de Seguridad) is Spain's national security framework for electronic administration. Established by Royal Decree 311/2022, it defines security principles and requirements for public sector systems, classified into Basic, Medium, and High categories.
 
-The Developmi Stack provides technical-functional equivalence for the **Medium category**, covering access control, protection, and monitoring dimensions.
+The Developmi Hardened provides technical-functional equivalence for the **Medium category**, covering access control, protection, and monitoring dimensions.
 
 ### 4.2 ENS Requirements Mapping
 
@@ -179,7 +179,7 @@ Continuous monitoring and incident visibility are supported through CrowdSec and
 
 ### 6.1 Future Inclusion Rationale
 
-SOC 2 Type II is the dominant assurance framework for SaaS platforms, covering trust service criteria for Security, Availability, Processing Integrity, Confidentiality, and Privacy. As the Developmi Stack provides a foundation for secure SaaS deployment, SOC 2 mapping is a natural extension.
+SOC 2 Type II is the dominant assurance framework for SaaS platforms, covering trust service criteria for Security, Availability, Processing Integrity, Confidentiality, and Privacy. As the Developmi Hardened provides a foundation for secure SaaS deployment, SOC 2 mapping is a natural extension.
 
 ### 6.2 Overlap with Implemented Frameworks
 

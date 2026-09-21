@@ -1,16 +1,16 @@
 ---
-title: Evidence Model - Developmi Stack
+title: Evidence Model - Developmi Hardened
 type: compliance
 owner: maintainers
 audience: all
 version: v6.0.0
 last-reviewed: 2026-06-30
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
-# Evidence Model | Developmi Stack
+# Evidence Model | Developmi Hardened
 
 How compliance evidence is collected, formatted, stored, verified, and retained.
 

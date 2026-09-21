@@ -7,8 +7,8 @@ version: v6.0.0
 last-reviewed: 2026-07-31
 status: accepted
 principles: 3 (Automation), 5 (Evidence)
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 ## 1. Context

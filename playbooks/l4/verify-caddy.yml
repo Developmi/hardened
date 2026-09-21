@@ -1,6 +1,6 @@
 ---
 # ==============================================================================
-# Developmi Stack | L4 Networking & Edge - Caddy + WAF UI Health Verification
+# Developmi Hardened | L4 Networking & Edge - Caddy + WAF UI Health Verification
 # ==============================================================================
 # Purpose: On-demand runtime health verification for caddy-waf and caddy-waf-ui.
 # Read-only checks: container state, host-side health endpoint, admin API

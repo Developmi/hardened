@@ -1,6 +1,6 @@
 ---
 # =============================================================================
-# SOPS CONFIGURATION EXAMPLE - Developmi Stack (public template twin, D10)
+# SOPS CONFIGURATION EXAMPLE - Developmi Hardened (public template twin, D10)
 # =============================================================================
 # This is the PUBLIC example twin of the private .sops.yaml. To use it:
 #   1. Copy to .sops.yaml:              cp .sops.yaml.example .sops.yaml

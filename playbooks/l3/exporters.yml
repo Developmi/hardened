@@ -1,6 +1,6 @@
 ---
 # ==============================================================================
-# Developmi Stack | L3 Observability - Metrics Exporters
+# Developmi Hardened | L3 Observability - Metrics Exporters
 # ==============================================================================
 # Purpose: Deploy node_exporter + cadvisor exporters on enabled nodes.
 # Extracted from monitoring.yml Play 1.

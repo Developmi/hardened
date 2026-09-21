@@ -16,8 +16,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-REPO_NAME="stack"
-REPO_URL="https://github.com/Developmi/stack.git"
+REPO_NAME="hardened"
+REPO_URL="https://github.com/Developmi/hardened.git"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
@@ -243,7 +243,7 @@ run_validation() {
 
 show_help() {
     cat << EOF
-Developmi Stack - Bootstrap Script
+Developmi Hardened - Bootstrap Script
 
 Usage: ./setup.sh [OPTION]
 
@@ -258,7 +258,7 @@ Examples:
   ./setup.sh             # Same as --validate
 
 Environment:
-  This script sets up the Developmi Stack for first use.
+  This script sets up Developmi Hardened for first use.
     It checks prerequisites, syncs the toolchain, installs collections,
     and validates configuration.
 
@@ -295,7 +295,7 @@ main() {
 
     enter_repo_root
 
-    print_header "Developmi Stack Bootstrap"
+    print_header "Developmi Hardened Bootstrap"
     print_info "Mode: $mode"
     print_info "Repository: $REPO_NAME"
     print_info "Business Model: Open Source Code, Optional Monitoring Services"

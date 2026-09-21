@@ -6,13 +6,13 @@ audience: contributor
 version: v6.0.0
 last-reviewed: 2026-07-16
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Contributor's Documentation Guide
 
-This guide is the Single Source of Truth (SSOT) for writing, organizing, formatting, and linking documentation in the **Developmi Stack**. It combines our documentation architecture, formatting conventions, cross-reference maps, and step-by-step contribution workflows.
+This guide is the Single Source of Truth (SSOT) for writing, organizing, formatting, and linking documentation in the **Developmi Hardened**. It combines our documentation architecture, formatting conventions, cross-reference maps, and step-by-step contribution workflows.
 
 > **For code contributions** (Ansible playbooks, roles, scripts, Docker configs), see the root `CONTRIBUTING.md`. This guide covers **documentation changes only**.
 
@@ -65,7 +65,7 @@ last_updated: YYYY-MM-DD
 owner: Team/Role (or TBD)
 audience: all|maintainer|contributor|operator
 status: active|draft|deprecated
-project: developmi-stack
+project: developmi-hardened
 version: vx.x.x
 ---
 ```
@@ -162,6 +162,6 @@ A document is stale if its `last_updated` date exceeds its cadence, references a
 
 ## Related Documents
 
-- [GLOSSARY.md](../GLOSSARY.md) - Developmi Stack terminology definitions
+- [GLOSSARY.md](../GLOSSARY.md) - Developmi Hardened terminology definitions
 - [ONBOARDING.md](ONBOARDING.md) - Persona-based reading paths
 - [README.md](/README.md) - Project entry point

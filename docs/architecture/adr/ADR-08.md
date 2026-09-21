@@ -8,8 +8,8 @@ last-reviewed: 2024-11-15 (original) / 2026-07-07 (superseded)
 status: superseded
 replaced_by: code (consolidated into roles/L6_runtime/backup/ with backup_role_source selection)
 principles: 1 (Simplicity), 8 (Boundaries)
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 ## Context

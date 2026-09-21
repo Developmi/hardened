@@ -6,13 +6,13 @@ audience: all
 version: v6.0.0
 last-reviewed: 2026-07-31
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Repository Structure
 
-Definitive directory-by-directory walkthrough of the Developmi Stack repository. Covers every top-level directory, all roles across 6 security layers, 11 playbooks, 12 application directories (11 standardized + fastapi community example), inventory structure, runtime adapters, and the Makefile build system.
+Definitive directory-by-directory walkthrough of the Developmi Hardened repository. Covers every top-level directory, all roles across 6 security layers, 11 playbooks, 12 application directories (11 standardized + fastapi community example), inventory structure, runtime adapters, and the Makefile build system.
 
 ---
 

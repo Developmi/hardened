@@ -1,6 +1,6 @@
 ---
 # ==============================================================================
-# Developmi Stack - L2 Compliance Hardening
+# Developmi Hardened - L2 Compliance Hardening
 # ==============================================================================
 # L2 (Compliance Hardening) - extracted from site.yml Play 2.
 # Uses internal dispatch via l2_*_enabled flags - sub-roles are

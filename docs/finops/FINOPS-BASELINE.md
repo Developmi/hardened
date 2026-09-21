@@ -6,15 +6,15 @@ audience: all
 version: v6.0.0
 last-reviewed: 2026-07-05
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # FinOps Baseline
 
 ## Overview
 
-This document tracks cost estimation and financial governance across the Developmi Stack.
+This document tracks cost estimation and financial governance across the Developmi Hardened.
 It establishes a per-node cost baseline for OpenSource-scoped layers (L1–L6), documents the
 boundary with private cloud provisioning costs (L0), and references the Nuntu field case study
 for aggregate OpEx comparison.

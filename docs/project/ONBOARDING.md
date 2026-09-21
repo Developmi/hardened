@@ -6,13 +6,13 @@ audience: all
 version: v6.0.0
 last-reviewed: 2026-07-16
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Onboarding Guide
 
-Welcome to the Developmi Stack documentation. This guide helps you find the right reading path based on who you are and what you need.
+Welcome to the Developmi Hardened documentation. This guide helps you find the right reading path based on who you are and what you need.
 
 ---
 
@@ -100,7 +100,7 @@ Below are three reading paths tailored to the most common reader personas. Pick 
 
 ## I'm an Operator
 
-**Who this is for:** You run the Developmi Stack in production or lab environments. You deploy, verify, troubleshoot, and maintain the hardened infrastructure.
+**Who this is for:** You run the Developmi Hardened in production or lab environments. You deploy, verify, troubleshoot, and maintain the hardened infrastructure.
 
 ### Suggested Reading Order
 

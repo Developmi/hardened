@@ -1,5 +1,5 @@
 ---
-# Ansible Galaxy collections required for Developmi Stack
+# Ansible Galaxy collections required for Developmi Hardened
 
 collections:
   - name: community.general

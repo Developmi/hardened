@@ -1,6 +1,6 @@
 ---
 # ==============================================================================
-# Developmi Stack - compliance.yml (Evidence-Only)
+# Developmi Hardened - compliance.yml (Evidence-Only)
 # ==============================================================================
 # Single-play, read-only evidence collection. Updates /srv/evidence/nist/<control>/
 # without modifying any host configuration. No services restarted, no packages
