@@ -1,6 +1,6 @@
 ---
 # ==============================================================================
-# Developmi Stack | L6 Runtime Backup - Stack Mode
+# Developmi Hardened | L6 Runtime Backup - Stack Mode
 # ==============================================================================
 # Purpose: Restic-based backup of Docker stack configurations.
 # Extracted from stacks.yml Play 4.

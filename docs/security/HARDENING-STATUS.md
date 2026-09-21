@@ -6,8 +6,8 @@ audience: all
 version: v6.0.0
 last-reviewed: 2026-07-05
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Hardening Status Matrix

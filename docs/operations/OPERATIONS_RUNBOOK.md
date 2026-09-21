@@ -6,13 +6,13 @@ audience: operator
 version: v6.0.0
 last-reviewed: 2026-07-16
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Operations Runbook
 
-Definitive operational reference for the Developmi Stack. Covers commands, audits, deployment, restart, rotation, boot sequence, and troubleshooting.
+Definitive operational reference for the Developmi Hardened. Covers commands, audits, deployment, restart, rotation, boot sequence, and troubleshooting.
 
 This project uses Make as the single operational interface for setup, deployment, validation, and maintenance. Prefer these commands over direct `ansible-playbook` calls.
 

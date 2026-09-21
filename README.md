@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/assets/developmi-stack.webp" width="180" alt="Developmi Stack logo" />
+<img src="docs/assets/developmi-hardened.webp" width="180" alt="Developmi Hardened logo" />
 
-# Developmi Stack
+# Developmi Hardened
 
 _A layered infrastructure stack built with Ansible, Docker and Zero Trust principles._
 
@@ -50,7 +50,7 @@ _A layered infrastructure stack built with Ansible, Docker and Zero Trust princi
 
 ## Overview
 
-Developmi Stack is an Ansible-based infrastructure automation project focused on establishing a secure, auditable, and repeatable baseline across mixed-host environments.
+Developmi Hardened is an Ansible-based infrastructure automation project focused on establishing a secure, auditable, and repeatable baseline across mixed-host environments.
 
 It is designed to standardize the security posture of:
 
@@ -168,8 +168,8 @@ This repository is not just "NIST-themed". It includes implementation-grounded c
 ### Setup
 
 ```bash
-git clone https://github.com/Developmi/stack.git
-cd stack
+git clone https://github.com/Developmi/hardened.git
+cd hardened
 make sync
 make install-collections
 ```

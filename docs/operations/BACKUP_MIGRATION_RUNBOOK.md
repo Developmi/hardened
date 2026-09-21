@@ -6,8 +6,8 @@ audience: operator
 version: v1.0.0
 last-reviewed: 2026-09-10
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Backup Migration Runbook

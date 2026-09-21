@@ -1,6 +1,6 @@
 ---
 # ==============================================================================
-# Developmi Stack - site.yml (Meta-Playbook)
+# Developmi Hardened - site.yml (Meta-Playbook)
 # ==============================================================================
 # Meta-playbook that chains atomic per-layer playbooks:
 #   L1 (OS Baseline) → L2 (Hardening · Lockdown)

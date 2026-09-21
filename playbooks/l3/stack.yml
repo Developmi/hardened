@@ -1,6 +1,6 @@
 ---
 # ==============================================================================
-# Developmi Stack | L3 Observability - Stack (VM, Loki, Grafana)
+# Developmi Hardened | L3 Observability - Stack (VM, Loki, Grafana)
 # ==============================================================================
 # Purpose: Deploy VictoriaMetrics + Loki + Grafana on brain host.
 # Extracted from monitoring.yml Play 2.

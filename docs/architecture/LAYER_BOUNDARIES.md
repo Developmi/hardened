@@ -6,8 +6,8 @@ audience: maintainer
 version: v6.0.0
 last-reviewed: 2026-07-31
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Layer Boundary Contracts - L0 to L6

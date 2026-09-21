@@ -6,11 +6,11 @@ audience: maintainer
 version: v6.0.0
 last-reviewed: 2026-07-16
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
-# Developer Onboarding - Developmi Stack v6.0.0
+# Developer Onboarding - Developmi Hardened v6.0.0
 
 5-step developer setup sequence to go from zero to running your first Ansible playbook.
 
@@ -31,7 +31,7 @@ repo: github.com/Developmi/stack
 ## Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/Developmi/stack.git
+git clone https://github.com/Developmi/hardened.git
 cd stack
 ```
 

@@ -6,8 +6,8 @@ audience: maintainer
 version: v6.0.0
 last-reviewed: 2026-07-16
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Project Workflow Onboarding
@@ -68,7 +68,7 @@ How to navigate the SDD workflow, documentation ecosystem, and project conventio
 
 ## Owner Responsibilities
 
-Every documentation artifact in the Developmi Stack has an assigned owner (documented in `.github/CODEOWNERS`) responsible for its accuracy, review cadence, and lifecycle.
+Every documentation artifact in the Developmi Hardened has an assigned owner (documented in `.github/CODEOWNERS`) responsible for its accuracy, review cadence, and lifecycle.
 
 1. **Accuracy**: The owner ensures the document's technical content is correct and aligned with the current implementation.
 2. **Review**: The owner reviews the document at the specified cadence and updates the `last-reviewed` date in its frontmatter.

@@ -1,6 +1,6 @@
 ---
 # ==============================================================================
-# Developmi Stack | L6 Runtime - Portainer Manager (conditional)
+# Developmi Hardened | L6 Runtime - Portainer Manager (conditional)
 # ==============================================================================
 # Purpose: Deploy Portainer BE on target_group host.
 # Extracted from stacks.yml Play 3.

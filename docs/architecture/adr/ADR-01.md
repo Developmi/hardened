@@ -7,13 +7,13 @@ version: v6.0.0
 last-reviewed: 2026-06-28
 status: accepted
 principles: 1 (Simplicity), 6 (Boring)
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 ## 1. Context
 
-The Developmi Stack (v6.0.0) needs a container runtime strategy that works across heterogeneous environments - from local workstations to production brain nodes. In v5.5.0 (stack), Docker Compose and Portainer were implicitly coupled: deploying the runtime meant deploying both.
+The Developmi Hardened (v6.0.0) needs a container runtime strategy that works across heterogeneous environments - from local workstations to production brain nodes. In v5.5.0 (stack), Docker Compose and Portainer were implicitly coupled: deploying the runtime meant deploying both.
 
 We needed a runtime model where Compose works without Portainer, and Portainer is an optional additive layer.
 

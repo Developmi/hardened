@@ -6,13 +6,13 @@ audience: operator
 version: v6.0.0
 last-reviewed: 2026-07-31
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Backup Strategy
 
-Two-layer backup architecture for the Developmi Stack platform, covering application data (L5) and runtime state (L6). This document describes the mechanisms, schedules, retention policies, verification methods, and restore procedures.
+Two-layer backup architecture for the Developmi Hardened platform, covering application data (L5) and runtime state (L6). This document describes the mechanisms, schedules, retention policies, verification methods, and restore procedures.
 
 **Source of truth caveat**: Tier-level backup policy - schedules, retention, and verification per DR tier - is the SSOT in §4 of this document (updated 2026-07-31 with the DR-tier model). Per-app values are declared in `apps/*/profile.yml` and MUST stay in sync with this document (SCE-BAK-006).
 

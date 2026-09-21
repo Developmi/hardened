@@ -6,13 +6,13 @@ audience: operator
 version: v6.0.0
 last-reviewed: 2026-07-31
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 # Operating System Compatibility Matrix
 
-This document defines the supported operating systems, architectures, common platform attributes, and procedures for introducing new platforms to the Developmi Stack.
+This document defines the supported operating systems, architectures, common platform attributes, and procedures for introducing new platforms to the Developmi Hardened.
 
 ---
 

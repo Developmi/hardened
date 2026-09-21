@@ -7,8 +7,8 @@ version: v6.0.0
 last-reviewed: 2026-07-31
 status: accepted
 principles: 9 (Open core, not open-washing)
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
 ## 1. Context

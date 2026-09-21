@@ -1,6 +1,6 @@
 ---
 # ==============================================================================
-# Developmi Stack | L4 Networking & Edge - Reverse Proxy + WAF
+# Developmi Hardened | L4 Networking & Edge - Reverse Proxy + WAF
 # ==============================================================================
 # Purpose: Deploy reverse proxy + WAF via L4_networking adapter.
 # Extracted from stacks.yml Play 2.

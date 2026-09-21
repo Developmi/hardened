@@ -1,16 +1,16 @@
 ---
-title: Production Acceptance - Developmi Stack
+title: Production Acceptance - Developmi Hardened
 type: compliance
 owner: maintainers
 audience: all
 version: v6.0.0
 last-reviewed: 2026-06-30
 status: active
-project: developmi-stack
-repo: github.com/Developmi/stack
+project: developmi-hardened
+repo: github.com/Developmi/hardened
 ---
 
-# Production Acceptance | Developmi Stack
+# Production Acceptance | Developmi Hardened
 
 Acceptance gates that must pass before the platform is considered production-ready. Each gate has explicit pass/fail criteria, a verification method, and a responsible role.
 

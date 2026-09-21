@@ -1,4 +1,4 @@
-# developmi-stack
+# developmi-hardened
 
 > **Public OpenSource** - Ansible hardening suite for Bare Metal Hosts or VPS
 
