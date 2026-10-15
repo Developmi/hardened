@@ -544,5 +544,5 @@
     - not (tailscale_serve_enabled | default(false))
     - _ts_serve_status.rc == 0
     - >-
-      tailscale_serve_port in (_ts_serve_status.stdout | default(''))
+      (tailscale_serve_port | default('8443')) in (_ts_serve_status.stdout | default(''))
   tags: [tailscale, l2-compliance, security]

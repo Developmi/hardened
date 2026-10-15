@@ -36,11 +36,11 @@
   notify: Restart SSH
   tags: [ssh, l2-compliance, nist, ac-2]
 
-- name: "AC-2 | Restrict root login to key-only (prohibit-password)"
+- name: "AC-2 | Restrict root login"
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regexp: "^#?PermitRootLogin"
-    line: "PermitRootLogin prohibit-password"
+    line: "PermitRootLogin {{ 'prohibit-password' if (bootstrap_mode | default(false)) else 'no' }}"
     state: present
     validate: "sshd -t -f %s"
   notify: Restart SSH

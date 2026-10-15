@@ -59,7 +59,8 @@
   # Known limitation: some kernel.* and net.* sysctls are read-only inside
   # containers/LXC (shared kernel). The config file is always written correctly
   # (previous task). Live apply is best-effort - real hardware has no such limit.
-  ignore_errors: yes
+  ignore_errors: true
+  when: ansible_virtualization_type | default('') not in ['docker', 'container', 'containerd']
   tags: [kernel, l2-compliance, nist, cm-7]
 
 - name: "CM-7 | Clean up legacy L1 blacklist file (pre-consolidation)"

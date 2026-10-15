@@ -6,10 +6,15 @@
 # Uses update_password: on_create to avoid resetting passwords on re-run.
 # ==============================================================================
 
+- name: "AC-2 | Inspect existing system users"
+  ansible.builtin.getent:
+    database: passwd
+  tags: [users, l2-compliance, nist, ac-2, ac-6]
+
 - name: "AC-2 | Create system user accounts"
   ansible.builtin.user:
     name: "{{ item.username }}"
-    uid: "{{ item.uid }}"
+    uid: "{{ omit if (item.username in (ansible_facts.getent_passwd | default({}))) else item.uid }}"
     groups: "{{ item.groups | join(',') if item.groups | length > 0 else omit }}"
     shell: "{{ item.shell }}"
     home: "{{ item.home }}"
