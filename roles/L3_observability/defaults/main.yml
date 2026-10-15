@@ -12,6 +12,8 @@ blackbox_exporter_image: "prom/blackbox-exporter:v0.27.0"
 # ─── Network & Host (safe defaults; production overrides from SOPS) ───────────
 observability_network_name: "observability_net"
 observability_stack_host_ip: "127.0.0.1"
+observability_exporter_bind_ip: "127.0.0.1"
+observability_cadvisor_port: 18080
 
 # ─── Retention & Intervals ────────────────────────────────────────────────────
 observability_retention_period: "14d"      # VictoriaMetrics data retention

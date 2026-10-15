@@ -12,12 +12,12 @@
     file: "{{ role_path }}/general/defaults/user_hardening.yml"
   tags: [always]
 
-- name: "AC-2 | Pre-flight: Verify connection user is root or ubuntu"
+- name: "AC-2 | Pre-flight: Verify connection user is root, ubuntu, or automation"
   ansible.builtin.assert:
     that:
-      - (ansible_user | default(ansible_env.USER | default('unknown'))) in ['root', 'ubuntu']
-    fail_msg: "Connection user {{ ansible_user | default(ansible_env.USER) }} is not root or ubuntu. This role must run as root/ubuntu."
-    success_msg: "Connection user: root/ubuntu - safe to create users"
+      - (ansible_user | default(ansible_env.USER | default('unknown'))) in ['root', 'ubuntu', 'automation']
+    fail_msg: "Connection user {{ ansible_user | default(ansible_env.USER) }} is not root, ubuntu, or automation. This role must run with administrative privileges."
+    success_msg: "Connection user authorized for user management"
   tags: [users, l2-compliance, nist, ac-2]
 
 - name: "AC-2 | Create system users (dev_admin, automation, breakglass)"

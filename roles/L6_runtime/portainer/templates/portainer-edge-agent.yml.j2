@@ -42,10 +42,10 @@ services:
           cpus: "1.0"
           memory: "512M"
     networks:
-      - {{ shared_network_name }}
+      - portainer_agent_net
     labels:
       com.docker.stack.namespace: "management"
 
 networks:
-  {{ shared_network_name }}:
-    external: true
+  portainer_agent_net:
+    driver: bridge

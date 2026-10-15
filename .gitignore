@@ -57,7 +57,9 @@ override.tf.json
 # Environment variable files
 .env
 .env.*
+*.env
 !.env.example
+!*.env.example
 
 # Shell environment overrides
 .envrc
@@ -113,6 +115,8 @@ inventory/group_vars/*/vault.yml
 inventory/*.generated
 inventory/hosts.ini.generated
 inventory/hosts.ini
+inventory/host_vars/*.yml
+!inventory/host_vars/*.example
 
 # SOPS / age (secrets management)
 # Operator age private key - backed up offline; NEVER commit
@@ -224,7 +228,8 @@ htmlcov/
 .cache/
 graphify-out/
 .codegraph/
-openspec
+openspec/
+audit/
 
 # Generic build artifacts
 dist/

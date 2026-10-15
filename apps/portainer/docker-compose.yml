@@ -1,0 +1,42 @@
+# Docker Compose - user-managed reference blueprint
+# Portainer Server (Hardened)
+# SECURITY NOTICE: Bind to Tailscale IP or localhost only; never expose 0.0.0.0 publicly.
+
+services:
+  portainer:
+    image: ${PORTAINER_IMAGE:-portainer/portainer-ce:2.45.2-alpine}
+    container_name: portainer
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer_data:/data
+    ports:
+      # Bind to localhost or Tailscale IP only
+      - "${PORTAINER_BIND_IP:-127.0.0.1}:${PORTAINER_PORT:-9443}:9443"
+      - "${PORTAINER_BIND_IP:-127.0.0.1}:${PORTAINER_TUNNEL_PORT:-8000}:8000"
+    networks:
+      - portainer_net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-check-certificate -q -O /dev/null https://localhost:9443/api/status || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "2G"
+        reservations:
+          cpus: "0.5"
+          memory: "256M"
+
+volumes:
+  portainer_data:
+    name: portainer_data
+
+networks:
+  portainer_net:
+    driver: bridge

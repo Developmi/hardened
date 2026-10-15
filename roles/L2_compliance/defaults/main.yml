@@ -12,3 +12,8 @@ l2_lynis_enabled: false           # Lynis compliance audit - opt-in (NIST AU-12)
 
 # Default: empty user list. Override in group_vars/brain/main.yml or higher.
 user_hardening_users: []
+
+# Tailscale Serve defaults
+tailscale_serve_enabled: false
+tailscale_serve_target: "8080"
+tailscale_serve_port: "8443"

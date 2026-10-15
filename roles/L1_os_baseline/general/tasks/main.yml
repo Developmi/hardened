@@ -40,3 +40,7 @@
 - name: "L1 | Disable swap"
   ansible.builtin.include_tasks: general/tasks/swap.yml
   tags: [common, l1-os-baseline, swap]
+
+- name: "L1 | Configure hardened MOTD and legal notice banner (AC-8)"
+  ansible.builtin.include_tasks: general/tasks/motd_banner.yml
+  tags: [common, l1-os-baseline, motd, banner]

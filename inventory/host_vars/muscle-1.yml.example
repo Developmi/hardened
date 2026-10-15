@@ -1,0 +1,16 @@
+---
+# ==============================================================================
+# Host Variables Template - Worker Node (muscle-1)
+# ==============================================================================
+# Copy to inventory/host_vars/muscle-1.yml and configure.
+# Never commit real host_vars files (ignored by .gitignore).
+# ==============================================================================
+
+# Applications deployed on this host that require backup engine orchestration.
+# App names must match directory names under apps/ (e.g. postgresql, n8n, etc.).
+# Example:
+#   deployed_apps:
+#     - postgresql
+#     - n8n
+# Default is empty (no blueprint app backups provisioned).
+deployed_apps: []

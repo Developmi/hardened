@@ -4,7 +4,7 @@
 
 services:
   clickhouse:
-    image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server:26.3.17.56}
+    image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server:26.9.19.9-alpine}
     container_name: clickhouse
     restart: always
     init: true
@@ -28,7 +28,6 @@ services:
       - clickhouse-data:/var/lib/clickhouse
     networks:
       - clickhouse_net
-      - expose_network
     healthcheck:
       test: ["CMD-SHELL", "clickhouse-client --user=$${CLICKHOUSE_USER} --password=$${CLICKHOUSE_PASSWORD} --query='SELECT 1' || exit 1"]
       interval: 10s
@@ -46,7 +45,5 @@ volumes:
   clickhouse-data: {}
 
 networks:
-  expose_network:
-    external: true
   clickhouse_net:
     driver: bridge

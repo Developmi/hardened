@@ -77,11 +77,11 @@ jobs:
       - name: Scan repository for high-risk credential patterns
         run: |
           set -euo pipefail
-          if rg -n --hidden -g '!.git' -g '!**/.venv/**' -e 'ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|-----BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY-----|xox[baprs]-[A-Za-z0-9-]{10,}' ; then
-            echo "ERROR: Potential hardcoded secrets detected."
+          if rg -l --hidden -g '!.git' -g '!**/.venv/**' -e 'ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}|-----BEGIN (RSA|OPENSSH|EC|DSA) PRIVATE KEY-----|xox[baprs]-[A-Za-z0-9-]{10,}' ; then
+            echo "ERROR: Potential hardcoded secrets detected in files listed above."
             exit 1
           fi
 
       - name: Dependency vulnerability scan
         run: |
-          uvx pip-audit -r requirements.txt
+          uvx pip-audit --path .venv

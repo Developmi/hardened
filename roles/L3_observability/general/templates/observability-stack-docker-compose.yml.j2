@@ -47,7 +47,7 @@ services:
     volumes:
       - {{ app_base_dir }}/observability/alloy-config.alloy:/etc/alloy/config.alloy:ro
       - {{ app_base_dir }}/ingress/caddy-data/logs:/var/log/caddy:ro
-      - {{ app_base_dir }}/observability/alloy-data:/var/lib/alloy/data
+      - {{ app_base_dir }}/observability/alloy-data:/var/lib/alloy
     command:
       - 'run'
       - '/etc/alloy/config.alloy'

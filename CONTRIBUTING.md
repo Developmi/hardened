@@ -123,13 +123,13 @@ make deploy-compliance
 make deploy-tags PLAYBOOK=playbooks/site.yml ANSIBLE_TAGS='nist,sc-7'
 
 # Playbook syntax check
-make dry-run PLAYBOOK=playbooks/stacks.yml
+make dry-run PLAYBOOK=playbooks/l6/engine.yml
 
 # Inventory validation
 make show-inventory
 
 # Test playbook structure (dry-run with check mode)
-make dry-run PLAYBOOK=playbooks/stacks.yml
+make dry-run PLAYBOOK=playbooks/site.yml
 
 # Secret Detection Baseline
 If detect-secrets reports false positives (e.g., example values in comments), update the baseline:

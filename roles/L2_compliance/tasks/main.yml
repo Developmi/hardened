@@ -10,7 +10,7 @@
 
 - name: "L2 | Include user hardening"
   ansible.builtin.include_tasks: "{{ role_path }}/general/tasks/user_hardening/main.yml"
-  when: (l2_user_hardening_enabled | default(true)) and (ansible_user | default('')) != 'automation'
+  when: l2_user_hardening_enabled | default(true)
   tags: [l2-compliance, user_hardening]
 
 - name: "L2 | Include Tailscale client"

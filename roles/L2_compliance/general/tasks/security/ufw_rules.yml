@@ -219,31 +219,31 @@
   notify: Reload UFW
   tags: [firewall, l2-compliance, nist, sc-7]
 
-# ─── Caddy HTTP/HTTPS (brain nodes) ──────────────────────────────────────
-- name: "SC-7 | Allow Caddy HTTP (brain nodes)"
+# ─── Caddy HTTP/HTTPS (ingress nodes) ────────────────────────────────────
+- name: "SC-7 | Allow Caddy HTTP (ingress nodes)"
   community.general.ufw:
     rule: allow
     port: "80"
     proto: tcp
-  when: "'brain' in group_names"
+  when: "'ingress' in group_names or 'brain' in group_names"
   notify: Reload UFW
   tags: [firewall, l2-compliance, nist, sc-7]
 
-- name: "SC-7 | Allow Caddy HTTPS (brain nodes)"
+- name: "SC-7 | Allow Caddy HTTPS (ingress nodes)"
   community.general.ufw:
     rule: allow
     port: "443"
     proto: tcp
-  when: "'brain' in group_names"
+  when: "'ingress' in group_names or 'brain' in group_names"
   notify: Reload UFW
   tags: [firewall, l2-compliance, nist, sc-7]
 
-- name: "SC-7 | Allow Caddy HTTP/3 QUIC (brain nodes)"
+- name: "SC-7 | Allow Caddy HTTP/3 QUIC (ingress nodes)"
   community.general.ufw:
     rule: allow
     port: "443"
     proto: udp
-  when: "'brain' in group_names"
+  when: "'ingress' in group_names or 'brain' in group_names"
   notify: Reload UFW
   tags: [firewall, l2-compliance, nist, sc-7]
 

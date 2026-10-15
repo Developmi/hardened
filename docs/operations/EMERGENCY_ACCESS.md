@@ -17,22 +17,22 @@ Phase 07 (Disable Root SSH).
 
 ## Console & Rescue Access
 
-### brain-1 (Oracle Cloud Infrastructure)
+### brain-1 (Hetzner)
 
-Access via **OCI Console → Compute → Instances → brain-1 → Console Connection**.
-Launch Cloud Shell or paste the connection string to open a serial console.
-This bypasses SSH entirely and works even when sshd is misconfigured.
+Access via **Hetzner Cloud Console / Robot Web UI → Server → Rescue / VNC Console**.
+Activate the rescue system or open VNC console to access the serial/terminal session.
+Mount the disk if booted into rescue:
 
-### muscle-1, muscle-2 (Hetzner)
-
-Access via **Hetzner Robot Web UI → Server → Rescue**.
-Activate the rescue system, reboot the server, and connect via the temporary
-root password displayed in the Robot panel. Mount the disk:
-
-```
+```bash
 mount /dev/sda1 /mnt
 chroot /mnt /bin/bash
 ```
+
+### muscle-1 (Oracle Cloud Infrastructure)
+
+Access via **OCI Console → Compute → Instances → muscle-1 → Console Connection**.
+Launch Cloud Shell or paste the connection string to open a serial console.
+This bypasses SSH entirely and works even when sshd or firewalls are misconfigured.
 
 ## Manual sshd_config Revert
 

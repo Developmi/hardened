@@ -30,6 +30,7 @@
           loop:
             - apt-daily.timer
             - apt-daily-upgrade.timer
+          changed_when: false
           failed_when: false
           tags: [always]
 
@@ -45,7 +46,10 @@
             apply:
               tags: [l1-os-baseline]
       rescue:
-        - name: "L1 | Recovery: Restore APT systemd timers"
+        - name: "L1 | Re-raise original failure"
+          ansible.builtin.fail:  # yamllint disable-line rule:empty-values
+      always:
+        - name: "L1 | Restore APT systemd timers"
           ansible.builtin.systemd:
             name: "{{ item }}"
             state: started
@@ -54,8 +58,6 @@
             - apt-daily.timer
             - apt-daily-upgrade.timer
           when: _apt_timers_stopped | default(false)
+          changed_when: false
           failed_when: false
           tags: [always]
-
-        - name: "L1 | Re-raise original failure"
-          ansible.builtin.fail:  # yamllint disable-line rule:empty-values

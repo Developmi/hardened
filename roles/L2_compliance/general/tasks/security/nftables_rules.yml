@@ -110,8 +110,8 @@
               iifname tailscale0 tcp dport {{ tailscale_serve_port | default('8443') }} accept
               {% endif %}
 
-              {% if 'brain' in group_names %}
-              # Caddy HTTP/HTTPS (brain nodes)
+              {% if 'ingress' in group_names or 'brain' in group_names %}
+              # Caddy HTTP/HTTPS (ingress nodes)
               tcp dport { 80, 443 } accept
               udp dport 443 accept  # HTTP/3 QUIC
               {% endif %}

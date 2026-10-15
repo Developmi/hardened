@@ -769,7 +769,7 @@ Backup and application reference layer. Runs database dumps and Restic backups f
 ```bash
 # Deploy backup automation (brain host)
 make deploy-backups
-make deploy-backup-timers
+make deploy-backup-engine
 ```
 
 **Verification:**
@@ -980,7 +980,7 @@ make deploy-portainer
 
 # 8. L5 - App Profiles (backup)
 make deploy-backups
-make deploy-backup-timers
+make deploy-backup-engine
 # Application deployment is operator-managed via reference profiles at apps/
 # or deploy all of L2+L3+L6 together:
 # make deploy-platform
@@ -1003,7 +1003,7 @@ Run individual playbooks for targeted operations.
 | `l3/exporters.yml`      | `make deploy-monitoring`                  | Node exporter + cadvisor (all hosts)           |
 | `l3/stack.yml`          | `make deploy-monitoring`                  | VictoriaMetrics + Grafana + Loki (brain only)  |
 | `l6/backup-appdata.yml` | `make deploy-backups`                     | App data backup (database dumps → Restic → R2) |
-| `l6/backup-timers.yml`  | `make deploy-backup-timers`               | Systemd backup timer scheduling                |
+| `l6/backup-engine.yml`  | `make deploy-backup-engine`               | Systemd backup timer and engine scheduling     |
 | `local-devices.yml`     | `make deploy-local`                       | Workstation hardening                          |
 | `l2/compliance.yml`     | `make deploy-compliance`                  | Compliance audit tags only                     |
 
@@ -1295,7 +1295,7 @@ custom datasource state.
 
 #### Known Gap: Brain-Only Backup Timers vs Muscle-Hosted App Databases
 
-The `backup-db-<app>` timers (deployed via `deploy-backup-timers`) run on the
+The `backup-db-<app>` timers (deployed via `deploy-backup-engine`) run on the
 brain hosts and execute `docker exec` against BRAIN-local containers. When app
 databases are hosted on muscle hosts (Fase 4 app deployment), those timers
 cannot reach the databases. Documented gap pending an architecture decision:

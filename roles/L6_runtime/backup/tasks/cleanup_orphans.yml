@@ -1,0 +1,82 @@
+---
+# =============================================================================
+# Unified backup engine - orphan unit cleanup (Garbage Collection)
+# =============================================================================
+# Discovers existing per-app backup engine and restore verification timers on
+# the managed host. Any unit whose app is NOT in `_deployed_apps_normalized`
+# is stopped, disabled, and its unit/script files removed.
+# =============================================================================
+
+- name: "Cleanup | Find existing backup-engine timer units"
+  ansible.builtin.find:
+    paths: /etc/systemd/system
+    patterns: "backup-engine-*.timer"
+    file_type: file
+  register: _existing_engine_timers
+  tags: [l6-runtime, backup, backup_engine]
+
+- name: "Cleanup | Find existing backup-restore-verify timer units"
+  ansible.builtin.find:
+    paths: /etc/systemd/system
+    patterns: "backup-restore-verify-*.timer"
+    file_type: file
+  register: _existing_verify_timers
+  tags: [l6-runtime, backup, backup_engine]
+
+- name: "Cleanup | Identify orphaned backup engine apps"
+  ansible.builtin.set_fact:
+    _orphan_engine_apps: >-
+      {{ _existing_engine_timers.files
+         | map(attribute='path')
+         | map('basename')
+         | map('regex_replace', '^backup-engine-(.*)\.timer$', '\1')
+         | reject('in', _deployed_apps_normalized)
+         | list }}
+    _orphan_verify_apps: >-
+      {{ _existing_verify_timers.files
+         | map(attribute='path')
+         | map('basename')
+         | map('regex_replace', '^backup-restore-verify-(.*)\.timer$', '\1')
+         | reject('in', _deployed_apps_normalized)
+         | list }}
+  tags: [l6-runtime, backup, backup_engine]
+
+- name: "Cleanup | Stop and disable orphaned backup-engine timers"
+  ansible.builtin.systemd:
+    name: "backup-engine-{{ item }}.timer"
+    state: stopped
+    enabled: false
+  loop: "{{ _orphan_engine_apps }}"
+  failed_when: false
+  tags: [l6-runtime, backup, backup_engine]
+
+- name: "Cleanup | Remove orphaned backup-engine systemd units and scripts"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: >-
+    {{ (_orphan_engine_apps | map('regex_replace', '^(.*)$', '/etc/systemd/system/backup-engine-\1.timer') | list)
+     + (_orphan_engine_apps | map('regex_replace', '^(.*)$', '/etc/systemd/system/backup-engine-\1.service') | list)
+     + (_orphan_engine_apps | map('regex_replace', '^(.*)$', '/usr/local/bin/backup-engine-\1.sh') | list) }}
+  notify: reload systemd
+  tags: [l6-runtime, backup, backup_engine]
+
+- name: "Cleanup | Stop and disable orphaned backup-restore-verify timers"
+  ansible.builtin.systemd:
+    name: "backup-restore-verify-{{ item }}.timer"
+    state: stopped
+    enabled: false
+  loop: "{{ _orphan_verify_apps }}"
+  failed_when: false
+  tags: [l6-runtime, backup, backup_engine]
+
+- name: "Cleanup | Remove orphaned backup-restore-verify systemd units and scripts"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: >-
+    {{ (_orphan_verify_apps | map('regex_replace', '^(.*)$', '/etc/systemd/system/backup-restore-verify-\1.timer') | list)
+     + (_orphan_verify_apps | map('regex_replace', '^(.*)$', '/etc/systemd/system/backup-restore-verify-\1.service') | list)
+     + (_orphan_verify_apps | map('regex_replace', '^(.*)$', '/usr/local/bin/backup-restore-verify-\1.sh') | list) }}
+  notify: reload systemd
+  tags: [l6-runtime, backup, backup_engine]

@@ -117,6 +117,7 @@
         line: "PermitRootLogin no"
         state: present
         validate: "sshd -t -f %s"
+      register: _lockdown_root_ssh
       tags: [lockdown, ssh]
 
     - name: "L2 | LOCKDOWN - Switch AllowUsers to Tailscale CGNAT"
@@ -128,12 +129,14 @@
         state: present
         insertbefore: BOF
         validate: "sshd -t -f %s"
+      register: _lockdown_allow_users
       tags: [lockdown, ssh]
 
     - name: "L2 | LOCKDOWN - Restart SSH to apply PermitRootLogin + AllowUsers"
       ansible.builtin.systemd:
         name: sshd
         state: restarted
+      when: (_lockdown_root_ssh.changed | default(false)) or (_lockdown_allow_users.changed | default(false))
       tags: [lockdown, ssh]
 
     # ========================================================================
@@ -234,9 +237,10 @@
       tags: [lockdown, firewall]
 
     - name: "L2 | LOCKDOWN - Create lockdown marker file"
-      ansible.builtin.file:
-        path: /etc/tailscale-recover.lock
-        state: touch
+      ansible.builtin.copy:
+        dest: /etc/tailscale-recover.lock
+        content: ""
+        force: false
         mode: "0644"
       tags: [lockdown]
 

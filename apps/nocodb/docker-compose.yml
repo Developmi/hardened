@@ -9,7 +9,7 @@ x-nocodb-env: &nocodb_env
 
 services:
   nocodb:
-    image: ${NOCDB_IMAGE:-nocodb/nocodb:2026.06.0}
+    image: ${NOCDB_IMAGE:-nocodb/nocodb:2026.09.1}
     container_name: nocodb
     restart: unless-stopped
     init: true
@@ -20,6 +20,8 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+    ports:
+      - "127.0.0.1:8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,10 +45,9 @@ services:
           memory: 256m
 
   postgres:
-    image: ${NOCDB_DB_IMAGE:-postgres:17.10-alpine}
+    image: ${NOCDB_DB_IMAGE:-postgres:17.11-alpine}
     container_name: nocodb-db
     restart: always
-    user: "999:999"
     init: true
     security_opt:
       - no-new-privileges:true
@@ -56,6 +57,8 @@ services:
       - CHOWN
       - SETGID
       - SETUID
+      - DAC_OVERRIDE
+      - FOWNER
     read_only: true
     tmpfs:
       - /tmp
@@ -69,10 +72,11 @@ services:
     networks:
       - nocodb_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-nocodb} -d $${POSTGRES_DB:-nocodb}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
     deploy:
       resources:
         limits:
@@ -81,15 +85,13 @@ services:
           memory: 256m
 
 volumes:
-  # Pre-existing operator volume - kept external so its data is preserved by
-  # the literal name nocodb_data (n8n precedent, app-stack-structure spec 003).
   nocodb_data:
-    external: true
     name: nocodb_data
   nocodb_postgres_data: {}
 
 networks:
   expose_network:
+    name: ${SHARED_NETWORK_NAME:-public_net}
     external: true
   nocodb_net:
     driver: bridge

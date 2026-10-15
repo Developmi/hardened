@@ -11,10 +11,9 @@ x-twenty-env: &twenty_env
 
 services:
   twenty-db:
-    image: ${TWENTY_DB_IMAGE:-postgres:17.10-alpine}
+    image: ${TWENTY_DB_IMAGE:-postgres:17.11-alpine}
     container_name: twenty-db
     restart: always
-    user: "999:999"
     init: true
     security_opt:
       - no-new-privileges:true
@@ -24,6 +23,8 @@ services:
       - CHOWN
       - SETGID
       - SETUID
+      - DAC_OVERRIDE
+      - FOWNER
     read_only: true
     tmpfs:
       - /tmp
@@ -37,10 +38,11 @@ services:
     networks:
       - twenty_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d twenty"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-twenty} -d twenty"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
     deploy:
       resources:
         limits:
@@ -77,6 +79,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -85,7 +88,7 @@ services:
           memory: 128m
 
   twenty:
-    image: ${TWENTY_IMAGE:-twentycrm/twenty:v2.26.0}
+    image: ${TWENTY_IMAGE:-twentycrm/twenty:v2.46.0}
     container_name: twenty
     restart: unless-stopped
     init: true
@@ -96,6 +99,8 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+    ports:
+      - "127.0.0.1:3000:3000"
     depends_on:
       twenty-db:
         condition: service_healthy
@@ -123,7 +128,7 @@ services:
           memory: 512m
 
   twenty-worker:
-    image: ${TWENTY_IMAGE:-twentycrm/twenty:v2.26.0}
+    image: ${TWENTY_IMAGE:-twentycrm/twenty:v2.46.0}
     container_name: twenty-worker
     restart: unless-stopped
     init: true
@@ -159,6 +164,7 @@ volumes:
 
 networks:
   expose_network:
+    name: ${SHARED_NETWORK_NAME:-public_net}
     external: true
   twenty_net:
     driver: bridge

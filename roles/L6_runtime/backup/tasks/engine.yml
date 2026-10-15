@@ -117,12 +117,25 @@
     daemon_reload: true
   tags: [l6-runtime, backup, backup_engine, backup_tier1]
 
-- name: "Engine | Collect app profile files (controller side)"
+- name: "Engine | Normalize deployed apps list"
+  ansible.builtin.set_fact:
+    _deployed_apps_normalized: >-
+      {{ (deployed_apps.split(',') if deployed_apps is string else (deployed_apps | default([])))
+         | map('trim') | reject('equalto', '') | list }}
+  tags: [l6-runtime, backup, backup_engine]
+
+- name: "Engine | Clean up orphaned backup timers and units"
+  ansible.builtin.include_tasks: cleanup_orphans.yml
+  tags: [l6-runtime, backup, backup_engine]
+
+- name: "Engine | Collect app profile files for deployed apps (controller side)"
   ansible.builtin.set_fact:
     _app_profile_paths: >-
       {{ lookup('ansible.builtin.pipe',
-           'find ' ~ (inventory_dir + '/../apps') | quote ~ ' -name profile.yml -type f')
-         .splitlines() | reject('equalto', '') | list | sort }}
+           'for app in ' ~ (_deployed_apps_normalized | join(' ')) ~ '; do ' ~
+           'p=' ~ (inventory_dir + '/../apps') | quote ~ '/"$app"/profile.yml; ' ~
+           '[ -f "$p" ] && echo "$p"; done')
+         .splitlines() | reject('equalto', '') | list | sort if (_deployed_apps_normalized | length > 0) else [] }}
   tags: [l6-runtime, backup, backup_engine]
 
 - name: "Engine | Render the unit pair for each app profile"

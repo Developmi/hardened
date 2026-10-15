@@ -116,3 +116,7 @@ restic_keep_monthly: 3
 
 # ── Gate - shared across all source roles ──
 enable_backups: true
+
+# ── Deployed applications per host (default empty) ──
+# Override in inventory/host_vars/<hostname>.yml with list of apps (e.g. [postgresql, n8n]).
+deployed_apps: []

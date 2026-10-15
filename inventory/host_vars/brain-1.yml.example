@@ -1,0 +1,11 @@
+---
+# ==============================================================================
+# Host Variables Template - Management Node (brain-1)
+# ==============================================================================
+# Copy to inventory/host_vars/brain-1.yml and configure.
+# Never commit real host_vars files (ignored by .gitignore).
+# ==============================================================================
+
+# Applications deployed on this host that require backup engine orchestration.
+# Brain nodes host control plane and observability, so this list is typically empty.
+deployed_apps: []

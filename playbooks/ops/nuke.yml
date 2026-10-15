@@ -386,55 +386,7 @@
       tags: [crowdsec]
 
     # --------------------------------------------------------------------------
-    # 5) TAILSCALE (roles/L2_compliance/general)
-    # Tags: tailscale
-    # --------------------------------------------------------------------------
-    - name: Tailscale | Disconnect node from mesh
-      ansible.builtin.command:
-        argv: [tailscale, down]
-      changed_when: false
-      failed_when: false
-      tags: [tailscale]
-
-    - name: Tailscale | Logout node from mesh
-      ansible.builtin.command:
-        argv: [tailscale, logout]
-      changed_when: false
-      failed_when: false
-      tags: [tailscale]
-
-    - name: Tailscale | Stop tailscaled service
-      ansible.builtin.systemd:
-        name: tailscaled
-        state: stopped
-        enabled: false
-      failed_when: false
-      tags: [tailscale]
-
-    - name: Tailscale | Release package hold
-      ansible.builtin.command:
-        argv: [apt-mark, unhold, tailscale]
-      changed_when: false
-      failed_when: false
-      tags: [tailscale]
-
-    - name: Tailscale | Remove package
-      ansible.builtin.apt:
-        name: tailscale
-        state: absent
-        purge: true
-      failed_when: false
-      tags: [tailscale]
-
-    - name: Tailscale | Remove artifacts
-      ansible.builtin.file:
-        path: "{{ item }}"
-        state: absent
-      loop: "{{ tailscale_cleanup_paths }}"
-      tags: [tailscale]
-
-    # --------------------------------------------------------------------------
-    # 6) SECURITY BASELINE (roles/L2_compliance/general/tasks/security)
+    # 5) SECURITY BASELINE (roles/L2_compliance/general/tasks/security)
     # Tags: security
     # --------------------------------------------------------------------------
     - name: Security | Stop security services
@@ -634,6 +586,42 @@
         path: "{{ app_root }}"
         state: absent
       tags: [docker, runtime]
+
+    # --------------------------------------------------------------------------
+    # 8.5) TAILSCALE TEARDOWN (roles/L2_compliance/general)
+    # Deferred to the end to prevent active SSH session termination over overlay
+    # Tags: tailscale
+    # --------------------------------------------------------------------------
+    - name: Tailscale | Release package hold
+      ansible.builtin.command:
+        argv: [apt-mark, unhold, tailscale]
+      changed_when: false
+      failed_when: false
+      tags: [tailscale]
+
+    - name: Tailscale | Remove package
+      ansible.builtin.apt:
+        name: tailscale
+        state: absent
+        purge: true
+      failed_when: false
+      tags: [tailscale]
+
+    - name: Tailscale | Remove artifacts
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ tailscale_cleanup_paths }}"
+      tags: [tailscale]
+
+    - name: Tailscale | Disconnect and stop mesh asynchronously
+      ansible.builtin.shell: |
+        nohup bash -c 'sleep 3 && tailscale down && tailscale logout && systemctl stop tailscaled' >/dev/null 2>&1 &
+      args:
+        executable: /bin/bash
+      changed_when: false
+      failed_when: false
+      tags: [tailscale]
 
     # --------------------------------------------------------------------------
     # 9) FINAL VERIFICATION

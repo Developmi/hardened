@@ -24,7 +24,6 @@ services:
     image: ${CHATWOOT_DB_IMAGE:-pgvector/pgvector:0.8.6-pg17}
     restart: always
     container_name: chatwoot-db
-    user: "999:999"
     init: true
     security_opt:
       - no-new-privileges:true
@@ -34,6 +33,8 @@ services:
       - CHOWN
       - SETGID
       - SETUID
+      - DAC_OVERRIDE
+      - FOWNER
     read_only: true
     tmpfs:
       - /tmp
@@ -47,10 +48,11 @@ services:
     networks:
       - chatwoot_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${CHATWOOT_DB_USER} -d chatwoot_production"]
+      test: ["CMD-SHELL", "pg_isready -U $${CHATWOOT_DB_USER:-chatwoot} -d chatwoot_production"]
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 20s
     deploy:
       resources:
         limits:
@@ -80,10 +82,11 @@ services:
     networks:
       - chatwoot_net
     healthcheck:
-      test: ["CMD-SHELL", "valkey-cli -a ${CHATWOOT_REDIS_PASSWORD} ping"]
+      test: ["CMD-SHELL", "valkey-cli -a $${CHATWOOT_REDIS_PASSWORD} ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -92,7 +95,7 @@ services:
           memory: 64m
 
   chatwoot-web:
-    image: ${CHATWOOT_IMAGE:-chatwoot/chatwoot:v4.13.0}
+    image: ${CHATWOOT_IMAGE:-chatwoot/chatwoot:v4.18.0}
     restart: unless-stopped
     container_name: chatwoot
     init: true
@@ -104,6 +107,8 @@ services:
       - CHOWN
       - SETGID
       - SETUID
+    ports:
+      - "127.0.0.1:3000:3000"
     depends_on:
       chatwoot-db:
         condition: service_healthy
@@ -122,6 +127,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+      start_period: 60s
     deploy:
       resources:
         limits:
@@ -130,7 +136,7 @@ services:
           memory: 256m
 
   chatwoot-worker:
-    image: ${CHATWOOT_IMAGE:-chatwoot/chatwoot:v4.13.0}
+    image: ${CHATWOOT_IMAGE:-chatwoot/chatwoot:v4.18.0}
     restart: unless-stopped
     container_name: chatwoot-worker
     init: true
@@ -171,6 +177,7 @@ volumes:
 
 networks:
   expose_network:
+    name: ${SHARED_NETWORK_NAME:-public_net}
     external: true
   chatwoot_net:
     driver: bridge
