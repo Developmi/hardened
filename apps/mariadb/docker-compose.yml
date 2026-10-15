@@ -32,7 +32,6 @@ services:
       - mariadb_data:/var/lib/mysql
     networks:
       - mariadb_net
-      - expose_network
     healthcheck:
       test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u$${MARIADB_USER} -p$${MARIADB_PASSWORD} --silent"]
       interval: 10s
@@ -50,7 +49,5 @@ volumes:
   mariadb_data: {}
 
 networks:
-  expose_network:
-    external: true
   mariadb_net:
     driver: bridge

@@ -17,10 +17,9 @@ x-metabase-env: &metabase_env
 
 services:
   metabase-db:
-    image: ${METABASE_DB_IMAGE:-postgres:17.10-alpine}
+    image: ${METABASE_DB_IMAGE:-postgres:17.11-alpine}
     restart: always
     container_name: metabase-db
-    user: "999:999"
     init: true
     security_opt:
       - no-new-privileges:true
@@ -30,6 +29,8 @@ services:
       - CHOWN
       - SETGID
       - SETUID
+      - DAC_OVERRIDE
+      - FOWNER
     read_only: true
     tmpfs:
       - /tmp
@@ -43,10 +44,11 @@ services:
     networks:
       - metabase_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-metabase} -d $${POSTGRES_DB:-metabase}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
     deploy:
       resources:
         limits:
@@ -55,7 +57,7 @@ services:
           memory: 256m
 
   metabase:
-    image: ${METABASE_IMAGE:-metabase/metabase:v0.63.1}
+    image: ${METABASE_IMAGE:-metabase/metabase:v0.64.1}
     container_name: metabase
     hostname: metabase
     restart: unless-stopped
@@ -76,6 +78,8 @@ services:
       - /dev/urandom:/dev/random:ro
       - metabase_plugins:/plugins
     environment: *metabase_env
+    ports:
+      - "127.0.0.1:3000:3000"
     expose:
       - "3000"
     networks:
@@ -88,6 +92,7 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+      start_period: 45s
     deploy:
       resources:
         limits:
@@ -101,6 +106,7 @@ volumes:
 
 networks:
   expose_network:
+    name: ${SHARED_NETWORK_NAME:-public_net}
     external: true
   metabase_net:
     driver: bridge

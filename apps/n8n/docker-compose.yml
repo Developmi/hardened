@@ -45,7 +45,7 @@ x-n8n-env: &n8n_env
 
 services:
   n8n:
-    image: ${N8N_IMAGE:-n8nio/n8n:2.32.7}
+    image: ${N8N_IMAGE:-n8nio/n8n:2.43.5}
     container_name: n8n
     restart: unless-stopped
     init: true
@@ -57,6 +57,8 @@ services:
     tmpfs:
       - /tmp
       - /home/node/.cache:uid=1000,gid=1000,mode=0700
+    ports:
+      - "127.0.0.1:5678:5678"
     depends_on:
       postgres:
         condition: service_healthy
@@ -82,7 +84,7 @@ services:
           memory: 256m
 
   n8n-worker:
-    image: ${N8N_IMAGE:-n8nio/n8n:2.32.7}
+    image: ${N8N_IMAGE:-n8nio/n8n:2.43.5}
     container_name: n8n-worker
     restart: unless-stopped
     init: true
@@ -121,7 +123,7 @@ services:
       start_period: 20s
 
   n8n-runner:
-    image: ${N8N_RUNNER_IMAGE:-n8nio/runners:2.32.7}
+    image: ${N8N_RUNNER_IMAGE:-n8nio/runners:2.43.5}
     container_name: n8n-runner
     restart: unless-stopped
     init: true
@@ -149,10 +151,9 @@ services:
       - n8n_net
 
   postgres:
-    image: ${N8N_DB_IMAGE:-postgres:17.10-alpine}
+    image: ${N8N_DB_IMAGE:-postgres:17.11-alpine}
     container_name: n8n-db
     restart: always
-    user: "999:999"
     init: true
     security_opt:
       - no-new-privileges:true
@@ -162,6 +163,8 @@ services:
       - CHOWN
       - SETGID
       - SETUID
+      - DAC_OVERRIDE
+      - FOWNER
     read_only: true
     tmpfs:
       - /tmp
@@ -175,10 +178,11 @@ services:
     networks:
       - n8n_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-n8n} -d $${POSTGRES_DB:-n8n}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
     deploy:
       resources:
         limits:
@@ -190,7 +194,6 @@ services:
     image: ${N8N_VALKEY_IMAGE:-valkey/valkey:9.1.1}
     container_name: n8n-valkey
     restart: always
-    user: "999:999"
     init: true
     security_opt:
       - no-new-privileges:true
@@ -218,6 +221,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -227,13 +231,13 @@ services:
 
 volumes:
   n8n_data:
-    external: true
     name: n8n_data
   postgres_data: {}
   valkey_data: {}
 
 networks:
   expose_network:
+    name: ${SHARED_NETWORK_NAME:-public_net}
     external: true
   n8n_net:
     driver: bridge

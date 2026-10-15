@@ -19,10 +19,9 @@ x-openwebui-env: &openwebui_env
 
 services:
   postgres:
-    image: ${OPENWEBUI_DB_IMAGE:-postgres:17.10-alpine}
+    image: ${OPENWEBUI_DB_IMAGE:-postgres:17.11-alpine}
     container_name: openwebui-db
     restart: always
-    user: "999:999"
     init: true
     security_opt:
       - no-new-privileges:true
@@ -32,6 +31,8 @@ services:
       - CHOWN
       - SETGID
       - SETUID
+      - DAC_OVERRIDE
+      - FOWNER
     read_only: true
     tmpfs:
       - /tmp
@@ -45,10 +46,11 @@ services:
     networks:
       - openwebui_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-openwebui} -d $${POSTGRES_DB:-openwebui}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 20s
     deploy:
       resources:
         limits:
@@ -90,6 +92,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     deploy:
       resources:
         limits:
@@ -98,7 +101,7 @@ services:
           memory: 128m
 
   openwebui:
-    image: ${OPENWEBUI_IMAGE:-ghcr.io/open-webui/open-webui:v0.11.0}
+    image: ${OPENWEBUI_IMAGE:-ghcr.io/open-webui/open-webui:v0.12.1}
     container_name: openwebui
     restart: unless-stopped
     init: true
@@ -110,6 +113,8 @@ services:
     tmpfs:
       - /tmp
       - /root/.cache
+    ports:
+      - "127.0.0.1:8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
@@ -141,6 +146,7 @@ volumes:
 
 networks:
   expose_network:
+    name: ${SHARED_NETWORK_NAME:-public_net}
     external: true
   openwebui_net:
     driver: bridge

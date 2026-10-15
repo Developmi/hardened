@@ -4,10 +4,9 @@
 
 services:
   postgresql:
-    image: ${POSTGRESQL_IMAGE:-postgres:17.10-alpine}
+    image: ${POSTGRESQL_IMAGE:-postgres:17.11-alpine}
     container_name: postgresql
     restart: always
-    user: "999:999"
     init: true
     security_opt:
       - no-new-privileges:true
@@ -17,6 +16,8 @@ services:
       - CHOWN
       - SETGID
       - SETUID
+      - DAC_OVERRIDE
+      - FOWNER
     read_only: true
     tmpfs:
       - /tmp
@@ -31,7 +32,6 @@ services:
       - postgresql_data:/var/lib/postgresql/data
     networks:
       - postgresql_net
-      - expose_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}"]
       interval: 10s
@@ -48,7 +48,5 @@ volumes:
   postgresql_data: {}
 
 networks:
-  expose_network:
-    external: true
   postgresql_net:
     driver: bridge

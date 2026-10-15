@@ -5,7 +5,7 @@ depends_on: []
 
 monitoring:
   enabled: true
-  health_endpoint: "/health"
+  health_endpoint: "/healthz"
   health_port: 3000
   scrape_port: 3000
 
@@ -32,6 +32,7 @@ backup:
   # engine dispatches from databases[]/volumes[], never from db_type/db_name.
   db_type: postgres
   db_name: twenty
+  db_container: twenty
   databases:
     # Declared DB intent (APP-PROFILE-SCHEMA-004-03). Password from SOPS
     # (backup_db_twenty_crm_password); never declared here (CRED-001).
