@@ -449,19 +449,34 @@
         reauthorize: true
       no_log: true
 
-    - name: Verify Caddy image digest if specified
+    - name: Pre-pull Caddy image before verification
+      community.docker.docker_image:
+        name: "{{ caddy_image }}"
+        source: pull
+        state: present
+      register: _caddy_image_pull
+      retries: 3
+      delay: 5
+      until: _caddy_image_pull is succeeded
+
+    - name: Inspect local Caddy image
       community.docker.docker_image_info:
         name: "{{ caddy_image }}"
       register: caddy_image_info
       when: caddy_image_digest is defined
 
-    - name: Fail if digest mismatch
+    - name: Fail-closed if Caddy image digest missing or mismatch
       ansible.builtin.fail:
-        msg: "Caddy image digest mismatch. Expected {{ caddy_image_digest }}, got {{ caddy_image_info.image.Digest }}"
+        msg: "Caddy image digest verification failed. Expected {{ caddy_image_digest }}."
       when:
         - caddy_image_digest is defined
-        - caddy_image_info.image.Digest is defined
-        - caddy_image_info.image.Digest != caddy_image_digest
+        - >-
+          (caddy_image_info.images is not defined) or
+          (caddy_image_info.images | length == 0) or
+          not (
+            (caddy_image_info.image.Digest is defined and caddy_image_info.image.Digest == caddy_image_digest) or
+            (caddy_image_info.images[0].RepoDigests is defined and (caddy_image_digest in (caddy_image_info.images[0].RepoDigests | join(' '))))
+          )
 
     # --------------------------------------------------------------------------
     # CANONICAL CADDYFILE FORMATTING (must run BEFORE the compose render)
@@ -538,6 +553,22 @@
         mode: "0644"
         owner: root
         group: root
+
+    - name: Create secure environment file for Caddy WAF UI
+      ansible.builtin.template:
+        src: caddy-ui.env.j2
+        dest: "{{ app_base_dir }}/ingress/.caddy-ui.env"
+        mode: "0600"
+        owner: root
+        group: root
+      no_log: true
+      when: caddy_ui_enabled | default(false) | bool
+
+    - name: Remove Caddy WAF UI environment file if UI is disabled
+      ansible.builtin.file:
+        path: "{{ app_base_dir }}/ingress/.caddy-ui.env"
+        state: absent
+      when: not (caddy_ui_enabled | default(false) | bool)
 
     # Clean stale container from previous failed deploy (bind mount directory artifact)
     - name: Remove stale Caddy container with broken bind mount
@@ -646,7 +677,18 @@
     # --------------------------------------------------------------------------
     # CADDY WAF UI - Digest verify, deploy, health, runtime asserts
     # --------------------------------------------------------------------------
-    - name: Verify UI image digest if specified
+    - name: Pre-pull Caddy WAF UI image before verification
+      community.docker.docker_image:
+        name: "{{ caddy_ui_image }}"
+        source: pull
+        state: present
+      register: _caddy_ui_image_pull
+      retries: 3
+      delay: 5
+      until: _caddy_ui_image_pull is succeeded
+      when: caddy_ui_enabled | default(false) | bool
+
+    - name: Inspect local Caddy WAF UI image
       community.docker.docker_image_info:
         name: "{{ caddy_ui_image }}"
       register: caddy_ui_image_info
@@ -654,16 +696,19 @@
         - caddy_ui_enabled | default(false) | bool
         - caddy_ui_image_digest is defined
 
-    - name: Fail if UI image digest mismatch
+    - name: Fail-closed if UI image digest missing or mismatch
       ansible.builtin.fail:
-        msg: >-
-          Caddy WAF UI image digest mismatch.
-          Expected {{ caddy_ui_image_digest }}, got {{ caddy_ui_image_info.image.Digest }}.
+        msg: "Caddy WAF UI image digest verification failed. Expected {{ caddy_ui_image_digest }}."
       when:
         - caddy_ui_enabled | default(false) | bool
         - caddy_ui_image_digest is defined
-        - caddy_ui_image_info.image.Digest is defined
-        - caddy_ui_image_info.image.Digest != caddy_ui_image_digest
+        - >-
+          (caddy_ui_image_info.images is not defined) or
+          (caddy_ui_image_info.images | length == 0) or
+          not (
+            (caddy_ui_image_info.image.Digest is defined and caddy_ui_image_info.image.Digest == caddy_ui_image_digest) or
+            (caddy_ui_image_info.images[0].RepoDigests is defined and (caddy_ui_image_digest in (caddy_ui_image_info.images[0].RepoDigests | join(' '))))
+          )
 
     - name: Deploy Caddy WAF UI service
       community.docker.docker_compose_v2:

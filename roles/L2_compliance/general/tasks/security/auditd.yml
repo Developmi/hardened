@@ -54,7 +54,7 @@
   tags: [audit, l2-compliance, nist, si-4, au-12]
 
 # ==============================================================================
-# Caddy-specific auditd rules (NIST AU-12) - gated on app_base_dir/ingress/Caddyfile
+# Caddy-specific auditd rules (NIST AU-12) - dedicated drop-in ruleset
 # ==============================================================================
 
 - name: "AU-12 | Check Caddy installation"
@@ -63,67 +63,26 @@
   register: _caddy_installed
   tags: [audit, l2-compliance, nist, au-12]
 
-- name: "AU-12 | Add auditd rule - Caddy config change"
-  ansible.builtin.lineinfile:
-    path: /etc/audit/rules.d/nist-hardening.rules
-    regexp: "caddy_config_change$"
-    line: "-w {{ app_base_dir }}/ingress/Caddyfile -p wa -k caddy_config_change"
-    state: present
+- name: "AU-12 | Configure auditd rules for Caddy and Coraza"
+  ansible.builtin.copy:
+    dest: /etc/audit/rules.d/caddy.rules
+    content: |
+      ## NIST 800-53 AU-12 Caddy & Coraza Audit Rules
+      -w {{ app_base_dir }}/ingress/Caddyfile -p wa -k caddy_config_change
+      -w {{ app_base_dir }}/ingress -p wa -k caddy_stack_change
+      -w {{ app_base_dir }}/ingress/caddy-data/logs -p wa -k caddy_log_tampering
+      -w {{ app_base_dir }}/ingress/caddy-data/logs/access.log -p wa -k caddy_access_log_change
+      -w {{ app_base_dir }}/ingress/caddy-data/logs/caddy.log -p wa -k caddy_runtime_log_change
+      -w {{ app_base_dir }}/ingress/caddy-data/logs/coraza-audit.log -p wa -k caddy_audit_log_change
+    mode: "{{ auditd_rules_file_mode }}"
   notify: Restart auditd
   when: _caddy_installed.stat.exists
   tags: [audit, l2-compliance, nist, au-12]
 
-- name: "AU-12 | Add auditd rule - Caddy stack change"
-  ansible.builtin.lineinfile:
-    path: /etc/audit/rules.d/nist-hardening.rules
-    regexp: "caddy_stack_change$"
-    line: "-w {{ app_base_dir }}/ingress -p wa -k caddy_stack_change"
-    state: present
+- name: "AU-12 | Remove Caddy auditd rules when Caddy is absent"
+  ansible.builtin.file:
+    path: /etc/audit/rules.d/caddy.rules
+    state: absent
   notify: Restart auditd
-  when: _caddy_installed.stat.exists
-  tags: [audit, l2-compliance, nist, au-12]
-
-- name: "AU-12 | Add auditd rule - Caddy log tampering"
-  ansible.builtin.lineinfile:
-    path: /etc/audit/rules.d/nist-hardening.rules
-    regexp: "caddy_log_tampering$"
-    line: "-w {{ app_base_dir }}/ingress/caddy-data/logs -p wa -k caddy_log_tampering"
-    state: present
-  notify: Restart auditd
-  when: _caddy_installed.stat.exists
-  tags: [audit, l2-compliance, nist, au-12]
-
-# ------------------------------------------------------------------------------
-# Per-file FIM (contract §7/§9, PCI 10.3.4): directory watches cover the dir
-# inode only; the three D6 log streams get explicit file-level rules.
-# ------------------------------------------------------------------------------
-
-- name: "AU-12 | Add auditd rule - Caddy access log tampering (per-file, D6)"
-  ansible.builtin.lineinfile:
-    path: /etc/audit/rules.d/nist-hardening.rules
-    regexp: "caddy_access_log_change$"
-    line: "-w {{ app_base_dir }}/ingress/caddy-data/logs/access.log -p wa -k caddy_access_log_change"
-    state: present
-  notify: Restart auditd
-  when: _caddy_installed.stat.exists
-  tags: [audit, l2-compliance, nist, au-12]
-
-- name: "AU-12 | Add auditd rule - Caddy runtime log tampering (per-file, D6)"
-  ansible.builtin.lineinfile:
-    path: /etc/audit/rules.d/nist-hardening.rules
-    regexp: "caddy_runtime_log_change$"
-    line: "-w {{ app_base_dir }}/ingress/caddy-data/logs/caddy.log -p wa -k caddy_runtime_log_change"
-    state: present
-  notify: Restart auditd
-  when: _caddy_installed.stat.exists
-  tags: [audit, l2-compliance, nist, au-12]
-
-- name: "AU-12 | Add auditd rule - Coraza audit log tampering (per-file, D6)"
-  ansible.builtin.lineinfile:
-    path: /etc/audit/rules.d/nist-hardening.rules
-    regexp: "caddy_audit_log_change$"
-    line: "-w {{ app_base_dir }}/ingress/caddy-data/logs/coraza-audit.log -p wa -k caddy_audit_log_change"
-    state: present
-  notify: Restart auditd
-  when: _caddy_installed.stat.exists
+  when: not _caddy_installed.stat.exists
   tags: [audit, l2-compliance, nist, au-12]

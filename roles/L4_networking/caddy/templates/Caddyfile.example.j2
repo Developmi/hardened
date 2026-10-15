@@ -111,21 +111,92 @@
     respond "OK" 200
 }
 
-# ── WAF snippet (Coraza + OWASP CRS) ──────────────────────────────────
-# ADR-05: SecRuleEngine set per-service via route /waf* (not globally).
+# ── WAF snippets (Coraza + OWASP CRS) ──────────────────────────────────
+# Global service protection with Coraza WAF & OWASP CRS.
 # Config and CRS rules baked into caddy-waf image at /etc/caddy/.
-(waf) {
+(waf_enforcement) {
     coraza_waf {
         directives `
             Include /etc/caddy/coraza.conf
             Include /etc/caddy/owasp-crs/crs-setup.conf
             Include /etc/caddy/owasp-crs/rules/*.conf
+            SecRuleEngine On
             SecAuditEngine RelevantOnly
             SecAuditLog /data/logs/coraza-audit.log
             SecAuditLogFormat JSON
             SecAuditLogParts ABCDEFGHIJKZ
         `
     }
+}
+
+(waf_detection) {
+    coraza_waf {
+        directives `
+            Include /etc/caddy/coraza.conf
+            Include /etc/caddy/owasp-crs/crs-setup.conf
+            Include /etc/caddy/owasp-crs/rules/*.conf
+            SecRuleEngine DetectionOnly
+            SecAuditEngine RelevantOnly
+            SecAuditLog /data/logs/coraza-audit.log
+            SecAuditLogFormat JSON
+            SecAuditLogParts ABCDEFGHIJKZ
+        `
+    }
+}
+
+(waf) {
+    coraza_waf {
+        directives `
+            Include /etc/caddy/coraza.conf
+            Include /etc/caddy/owasp-crs/crs-setup.conf
+            Include /etc/caddy/owasp-crs/rules/*.conf
+            SecRuleEngine DetectionOnly
+            SecAuditEngine RelevantOnly
+            SecAuditLog /data/logs/coraza-audit.log
+            SecAuditLogFormat JSON
+            SecAuditLogParts ABCDEFGHIJKZ
+        `
+    }
+}
+
+# ── Reusable Security Headers Snippet ─────────────────────────────────
+(security_headers) {
+    header {
+        # Information disclosure suppression
+        -Server
+        -X-Powered-By
+        -X-AspNet-Version
+
+        # HTTP Security Headers
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+        X-Permitted-Cross-Domain-Policies "none"
+
+        # Content Security Policy (OWASP secure baseline - adapt for application-specific assets)
+        Content-Security-Policy "default-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self';"
+    }
+}
+
+# ── Reusable Rate Limiting Snippet (caddy-ratelimit) ───────────────────
+(rate_limiting) {
+    rate_limit {
+        zone default {
+            key {remote_host}
+            events 100
+            window 1m
+        }
+    }
+}
+
+# ── Perimeter Hardening (Sensitive Paths) ─────────────────────────────
+(perimeter_hardening) {
+    @sensitive_paths {
+        path /.git* /.env* /.aws* /.docker* *.sql *.htpasswd *.bak *.conf
+    }
+    respond @sensitive_paths "Forbidden" 403
 }
 
 # ── Zero Trust VPN restriction ────────────────────────────────────────
@@ -181,6 +252,12 @@
         format json
     }
 
+    import perimeter_hardening
+
+    {% if _profile.rate_limit | default(100) > 0 %}
+    import rate_limiting
+    {% endif %}
+
     {% if _ui_managed %}
     # D2 | UI-managed site: per-slug overlay imports (order: ip-rules first —
     # blocked traffic never reaches Coraza). Files owned by caddy-waf-ui after first write.
@@ -206,14 +283,7 @@
     }
     handle {
         {% if not _ui_managed and _profile.import_waf | default(false) %}
-        import waf
-        route /waf* {
-            coraza_waf {
-                directives `
-                    SecRuleEngine {{ 'On' if _waf_mode == 'enforcement' else 'DetectionOnly' }}
-                `
-            }
-        }
+        import {{ 'waf_enforcement' if _waf_mode == 'enforcement' else 'waf' }}
         {% endif %}
         reverse_proxy {{ svc.upstream }} {
             {% if ph.standard | default(false) %}
@@ -226,14 +296,7 @@
     }
     {% else %}
     {% if not _ui_managed and _profile.import_waf | default(false) %}
-    import waf
-    route /waf* {
-        coraza_waf {
-            directives `
-                SecRuleEngine {{ 'On' if _waf_mode == 'enforcement' else 'DetectionOnly' }}
-            `
-        }
-    }
+    import {{ 'waf_enforcement' if _waf_mode == 'enforcement' else 'waf' }}
     {% endif %}
     reverse_proxy {{ svc.upstream }} {
         {% if ph.standard | default(false) %}

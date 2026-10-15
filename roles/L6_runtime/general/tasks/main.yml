@@ -147,6 +147,13 @@
   notify: Restart Docker
   tags: [l6-runtime, docker, compose]
 
+- name: Ensure shared Docker network exists ({{ shared_network_name }})
+  community.docker.docker_network:
+    name: "{{ shared_network_name }}"
+    driver: bridge
+    state: present
+  tags: [l6-runtime, docker, compose]
+
 - name: Create Docker garbage collection cron job
   ansible.builtin.cron:
     name: "Docker system prune"

@@ -193,15 +193,17 @@
         fail_msg: "SDD Failed: wildcard slug not escaped (raw * would trigger Caddy glob semantics)"
         success_msg: "Wildcard block uses escaped slug wildcard_example_com (D5)"
 
-    - name: "THEN: Unmanaged plain.example.com keeps import waf (D1)"
+    - name: "THEN: Unmanaged plain.example.com keeps import waf without quarantine (D1)"
       ansible.builtin.assert:
         that:
           - contract_block_plain is not none
           - '"import waf" in contract_block_plain'
-          - '"route /waf*" in contract_block_plain'
+          - '"route /waf*" not in contract_block_plain'
+          - '"import perimeter_hardening" in contract_block_plain'
+          - '"import rate_limiting" in contract_block_plain'
           - '"ui-managed" not in contract_block_plain'
-        fail_msg: "SDD Failed: unmanaged block lost the waf snippet import"
-        success_msg: "Unmanaged plain.example.com keeps the baseline waf snippet"
+        fail_msg: "SDD Failed: unmanaged block lost the waf snippet import or retained deprecated quarantine"
+        success_msg: "Unmanaged plain.example.com keeps the baseline waf snippet without quarantine"
 
     - name: "THEN: Unmanaged ws.example.com keeps websocket bypass and import waf"
       ansible.builtin.assert:
@@ -209,6 +211,9 @@
           - contract_block_ws is not none
           - '"@ws" in contract_block_ws'
           - '"import waf" in contract_block_ws'
+          - '"route /waf*" not in contract_block_ws'
+          - '"import perimeter_hardening" in contract_block_ws'
+          - '"import rate_limiting" in contract_block_ws'
           - '"ui-managed" not in contract_block_ws'
         fail_msg: "SDD Failed: websocket unmanaged block violated the contract"
         success_msg: "Unmanaged ws.example.com keeps websocket bypass with waf snippet"

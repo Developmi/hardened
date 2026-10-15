@@ -77,8 +77,9 @@ services:
       - {{ app_base_dir }}/ingress/backups:/backups:rw
       - {{ app_base_dir }}/ingress/caddy-data:/data:ro
       - {{ app_base_dir }}/ingress/Caddyfile:/etc/caddy/Caddyfile:ro
+    env_file:
+      - .caddy-ui.env
     environment:
-      CADDY_UI_TOKEN: "{{ caddy_ui_token }}"
       CADDY_ADMIN_URL: http://caddy-waf:2019
       CADDY_UI_CADDYFILE: /etc/caddy/Caddyfile
       CADDY_UI_MANAGED_DIR: /ui-managed
