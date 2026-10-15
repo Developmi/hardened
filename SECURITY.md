@@ -12,11 +12,10 @@ status: complete
 
 | Version | Supported              |
 | ------- | ---------------------- |
-| 5.2.x   | ✅ Yes                 |
-| 5.1.x   | ✅ Yes                 |
-| 5.0.x   | ✅ Yes                 |
-| 4.x     | ⚠️ Security fixes only |
-| < 4.0   | ❌ No                  |
+| 7.x     | ✅ Yes                 |
+| 6.x     | ✅ Yes                 |
+| 5.x     | ⚠️ Security fixes only |
+| < 5.0   | ❌ No                  |
 
 ## Reporting a vulnerability
 
