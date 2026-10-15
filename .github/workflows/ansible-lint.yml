@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -75,41 +74,33 @@ jobs:
           uv run ansible-playbook --syntax-check playbooks/l3/stack.yml
           uv run ansible-playbook --syntax-check playbooks/ops/nuke.yml
 
-      - name: Report results to PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # actions/github-script@v9.0.0
+      - name: Report results to Job Summary
+        if: always()
         env:
           ANSIBLE_OUTCOME: ${{ steps.ansible-lint.outcome }}
           YAMLLINT_OUTCOME: ${{ steps.yamllint.outcome }}
-        with:
-          script: |
-            const fs = require('fs');
-            let body = '## 🔍 Code Quality Report\n\n';
-
-            body += '### Ansible Lint\n';
-            if (process.env.ANSIBLE_OUTCOME === 'success') {
-              body += '✅ All playbooks passed linting\n\n';
-            } else {
-              body += '⚠️ Ansible Lint issues detected (see logs)\n\n';
-            }
-
-            body += '### YAML Validation\n';
-            if (process.env.YAMLLINT_OUTCOME === 'success') {
-              body += '✅ All YAML files valid\n\n';
-            } else {
-              body += '⚠️ YAML validation warnings (see logs)\n\n';
-            }
-
-            body += '**Security Note:** This project enforces NIST 800-53 compliance\n';
-            body += '- All code changes are subject to security audit\n';
-            body += '- See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines\n';
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
+        run: |
+          {
+            echo "## 🔍 Code Quality Report"
+            echo ""
+            echo "### Ansible Lint"
+            if [ "$ANSIBLE_OUTCOME" = "success" ]; then
+              echo "✅ All playbooks passed linting"
+            else
+              echo "⚠️ Ansible Lint issues detected (see logs)"
+            fi
+            echo ""
+            echo "### YAML Validation"
+            if [ "$YAMLLINT_OUTCOME" = "success" ]; then
+              echo "✅ All YAML files valid"
+            else
+              echo "⚠️ YAML validation warnings (see logs)"
+            fi
+            echo ""
+            echo "**Security Note:** This project enforces NIST 800-53 compliance"
+            echo "- All code changes are subject to security audit"
+            echo "- See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Fail on critical lint errors
         if: steps.ansible-lint.outcome == 'failure' || steps.yamllint.outcome == 'failure'
@@ -150,22 +141,26 @@ jobs:
         run: |
           uv run detect-secrets --version
 
-      - name: Scan for exposed secrets
-        id: detect-secrets
+      - name: Scan for exposed secrets against baseline
         run: |
           uv run detect-secrets scan \
             --baseline .secrets.baseline \
             --exclude-files 'roles/.*/(defaults|vars)/.*\.yml$' \
-            --exclude-files 'group_vars/.*\.yml'
-        continue-on-error: true
+            --exclude-files 'group_vars/.*\.yml' > secrets_report.json
 
-      - name: Fail if secrets detected
-        if: steps.detect-secrets.outcome == 'failure'
-        run: |
-          echo "❌ Potential secrets detected in commit"
-          echo "Do not commit secrets to version control"
-          echo "Use Ansible Vault or environment variables instead"
-          exit 1
+          python3 -c "
+          import json, sys
+          with open('secrets_report.json') as f:
+              data = json.load(f)
+          results = data.get('results', {})
+          if results:
+              print(f'❌ Potential secrets detected in {len(results)} file(s):')
+              for filepath, secrets in results.items():
+                  print(f'  - {filepath} ({len(secrets)} secrets)')
+              print('Do not commit secrets to version control. Use SOPS/Ansible Vault or update .secrets.baseline.')
+              sys.exit(1)
+          print('✅ No secrets detected outside baseline.')
+          "
 
   ansible-check:
     runs-on: ubuntu-latest
