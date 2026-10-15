@@ -238,7 +238,9 @@
       compactor:
         working_directory: /loki/compactor
         retention_enabled: true
+        delete_request_store: filesystem
     mode: "0644"
+
   tags: [l3-observability, observability, monitoring, stack, observability_stack, loki]
 
 - name: Create Alloy config (River — Caddy log shipping, D6)
