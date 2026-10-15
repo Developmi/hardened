@@ -10,6 +10,10 @@ l1_apt_cache_valid_time: 3600
 l1_apt_lock_timeout: 600
 l1_file_mode: "0644"
 
+platform_name: "Developmi Hardened"
+platform_version: "v7.0.0-dev"
+motd_clean_ads: true
+
 systemd_nofile_soft: 1024
 systemd_nofile_hard: 524288
 systemd_nproc_soft: 1024

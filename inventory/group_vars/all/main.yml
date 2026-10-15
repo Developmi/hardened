@@ -1,4 +1,8 @@
 ---
+# Platform metadata
+platform_name: "Developmi Hardened"
+platform_version: "v7.0.0-dev"
+
 # Global network defaults
 # Source of truth for the private management overlay used by non-bootstrap playbooks.
 # Set this if you use Headscale or another VPN subnet for remote administration.
@@ -139,7 +143,7 @@ kernel_dmesg_restrict: 1      # /proc/sys/kernel/dmesg_restrict - NIST CM-7
 # L2 compliance: enforced by ssh_hardening.yml. Override per-host if needed.
 ssh_ciphers: "chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr"
 ssh_macs: "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256"
-ssh_kex_algorithms: "curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group-exchange-sha256"
+ssh_kex_algorithms: "sntrup761x25519-sha512@openssh.com,curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group-exchange-sha256"
 
 # IPv6 privacy extensions (tempaddr = 2 enables RFC 4941 privacy addresses)
 net_ipv6_conf_all_use_tempaddr: 2
