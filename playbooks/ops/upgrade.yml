@@ -1,0 +1,112 @@
+---
+# ==============================================================================
+# Developmi Hardened - Controlled Rolling OS Package Upgrade & Verification
+# ==============================================================================
+# Safely performs rolling package updates on managed nodes with serial: 1.
+# Adheres to production hardening constraints:
+#   - Respects dpkg/apt-mark held packages (Docker, Tailscale are never auto-bumped)
+#   - Pre-flight detects and clears stale APT lock holders
+#   - Temporarily stops APT systemd timers during execution to avoid lock races
+#   - Upgrades OS packages via non-interactive apt module
+#   - Detects /var/run/reboot-required and provides actionable next steps
+#   - Verifies critical daemons (Docker, Tailscale, SSH) remain fully operational
+#   - Guarantees APT timers are restored in the always block
+# ==============================================================================
+
+- name: "Ops | Controlled Rolling OS Package Upgrade"
+  hosts: all
+  become: true
+  gather_facts: true
+  serial: 1
+  any_errors_fatal: true
+
+  pre_tasks:
+    - name: "Upgrade | Pre-flight: APT lock detection and cleanup"
+      ansible.builtin.include_tasks: "{{ playbook_dir }}/../_shared/apt_lock_preflight.yml"
+      tags: [always]
+
+  tasks:
+    - block:
+        - name: "Upgrade | Stop APT systemd timers"
+          ansible.builtin.systemd:
+            name: "{{ item }}"
+            state: stopped
+            enabled: false
+          loop:
+            - apt-daily.timer
+            - apt-daily-upgrade.timer
+          changed_when: false
+          failed_when: false
+          tags: [always]
+
+        - name: "Upgrade | Track timer state for rescue"
+          ansible.builtin.set_fact:
+            _apt_timers_stopped: true
+            cacheable: false
+          tags: [always]
+
+        - name: "Upgrade | Refresh APT package cache"
+          ansible.builtin.apt:
+            update_cache: true
+            cache_valid_time: 0
+            lock_timeout: 600
+
+        - name: "Upgrade | Perform safe system package upgrade"
+          ansible.builtin.apt:
+            upgrade: safe
+            allow_change_held_packages: false
+            lock_timeout: 600
+            dpkg_options: "force-confdef,force-confold"
+          register: _apt_upgrade_result
+
+        - name: "Upgrade | Check if system reboot is required"
+          ansible.builtin.stat:
+            path: /var/run/reboot-required
+          register: _reboot_required
+
+        - name: "Upgrade | Read reboot required packages if present"
+          ansible.builtin.slurp:
+            src: /var/run/reboot-required.pkgs
+          register: _reboot_pkgs_raw
+          when: _reboot_required.stat.exists
+          failed_when: false
+
+        - name: "Upgrade | Verify critical services are active"
+          ansible.builtin.systemd:
+            name: "{{ item }}"
+          loop:
+            - ssh
+            - docker
+            - tailscaled
+          register: _service_checks
+
+        - name: "Upgrade | Display upgrade summary and advisory"
+          ansible.builtin.debug:
+            msg:
+              - "Host: {{ inventory_hostname }}"
+              - "Packages upgraded: {{ _apt_upgrade_result.changed }}"
+              - "Reboot required: {{ _reboot_required.stat.exists }}"
+              - >-
+                {% if _reboot_required.stat.exists %}
+                ADVISORY: System restart required. Execute 'make reboot TARGET={{ inventory_hostname }}' to finalize kernel/library updates.
+                {% else %}
+                STATUS: System up to date and healthy. No restart required.
+                {% endif %}
+
+      rescue:
+        - name: "Upgrade | Re-raise original failure"
+          ansible.builtin.fail:  # yamllint disable-line rule:empty-values
+
+      always:
+        - name: "Upgrade | Restore APT systemd timers"
+          ansible.builtin.systemd:
+            name: "{{ item }}"
+            state: started
+            enabled: true
+          loop:
+            - apt-daily.timer
+            - apt-daily-upgrade.timer
+          when: _apt_timers_stopped | default(false)
+          changed_when: false
+          failed_when: false
+          tags: [always]

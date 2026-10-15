@@ -1,0 +1,101 @@
+---
+# ==============================================================================
+# Developmi Hardened - Controlled Rolling Reboot & Health Verification
+# ==============================================================================
+# Performs an audited, graceful reboot of managed hosts with serial: 1
+# to prevent cluster downtime. Automatically polls the host until SSH
+# is responsive, applies post-reboot settle delay, and verifies critical
+# system daemons, Zero Trust connectivity, and running containers.
+# ==============================================================================
+
+- name: "Ops | Controlled Rolling Reboot"
+  hosts: all
+  become: true
+  gather_facts: true
+  serial: 1
+  any_errors_fatal: true
+
+  vars:
+    ops_reboot_timeout: 600
+    ops_post_reboot_delay: 25
+    ops_pre_reboot_delay: 2
+
+  tasks:
+    - name: "Reboot | Pre-flight: Check system state before reboot"
+      ansible.builtin.command: uname -r
+      register: _pre_kernel
+      changed_when: false
+
+    - name: "Reboot | Pre-flight: Check if reboot was required"
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: _pre_reboot_required
+
+    - name: "Reboot | Pre-flight: Display pre-reboot status"
+      ansible.builtin.debug:
+        msg: >-
+          Initiating controlled reboot for {{ inventory_hostname }}.
+          Current kernel: {{ _pre_kernel.stdout }}.
+          Reboot required flag: {{ _pre_reboot_required.stat.exists }}.
+
+    - name: "Reboot | Flush filesystem buffers (sync)"
+      ansible.builtin.command: sync
+      changed_when: false
+
+    - name: "Reboot | Execute graceful system reboot"
+      ansible.builtin.reboot:
+        msg: "Controlled reboot initiated by Developmi Platform Maintenance (Ansible)"
+        connect_timeout: 5
+        reboot_timeout: "{{ ops_reboot_timeout }}"
+        pre_reboot_delay: "{{ ops_pre_reboot_delay }}"
+        post_reboot_delay: "{{ ops_post_reboot_delay }}"
+        test_command: uptime
+
+    - name: "Reboot | Post-flight: Gather post-reboot system facts"
+      ansible.builtin.setup:
+        filter:
+          - "ansible_kernel"
+          - "ansible_uptime_seconds"
+
+    - name: "Reboot | Post-flight: Verify reboot-required flag is cleared"
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: _post_reboot_required
+
+    - name: "Reboot | Post-flight: Check systemd core daemons"
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+      register: _daemon_status
+      failed_when: _daemon_status.status.ActiveState != "active"
+      loop:
+        - docker
+        - tailscaled
+        - ssh
+
+    - name: "Reboot | Post-flight: Check Tailscale mesh connectivity"
+      ansible.builtin.command: tailscale ip -4
+      register: _ts_ip
+      changed_when: false
+      failed_when: _ts_ip.rc != 0 or (_ts_ip.stdout | trim | length == 0)
+
+    - name: "Reboot | Post-flight: Check running Docker containers"
+      ansible.builtin.command:
+        argv:
+          - /usr/bin/docker
+          - ps
+          - --format
+          - "{% raw %}{{.Names}}: {{.Status}}{% endraw %}"
+      register: _docker_containers
+      changed_when: false
+
+    - name: "Reboot | Summary: Display post-reboot health report"
+      ansible.builtin.debug:
+        msg:
+          - "Host {{ inventory_hostname }} successfully rebooted and verified healthy."
+          - "Previous Kernel: {{ _pre_kernel.stdout }}"
+          - "Current Kernel:  {{ ansible_facts['kernel'] }}"
+          - "Uptime Seconds:  {{ ansible_facts['uptime_seconds'] }}s"
+          - "Reboot Required: {{ 'CLEARED' if not _post_reboot_required.stat.exists else 'STILL_PENDING' }}"
+          - "Tailscale IP:    {{ _ts_ip.stdout | trim }}"
+          - "Containers:"
+          - "{{ _docker_containers.stdout_lines }}"
