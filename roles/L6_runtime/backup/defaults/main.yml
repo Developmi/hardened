@@ -58,6 +58,7 @@ restic_local_repo_path: "/var/backups/restic/{{ inventory_hostname }}"
 
 # ── backup/ (app-data backup) defaults ──
 restic_image: "restic/restic:0.19.1"
+backup_tar_image: "alpine:3.21.3"
 
 # ── Unified engine (D11/ENGINE-001) ──
 # Shared ordered-quiesce helper sourced by every rendered per-app runner

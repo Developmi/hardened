@@ -848,6 +848,24 @@
         state: absent
 
     # ---------------------------------------------------------------------------
+    # TIER-003-HARDENING: ephemeral backup tar container must be hardened
+    # (--security-opt no-new-privileges:true --cap-drop ALL and pinned alpine)
+    # ---------------------------------------------------------------------------
+    - name: "GIVEN: Slurp the quiesce helper library"
+      ansible.builtin.slurp:
+        path: "{{ backup_engine_quiesce_lib | default('/usr/local/bin/backup-engine-quiesce.sh') }}"
+      register: _quiesce_helper_content
+
+    - name: "THEN: Quiesce helper invokes hardened docker run with no-new-privileges and cap-drop"
+      ansible.builtin.assert:
+        that:
+          - "'--security-opt no-new-privileges:true' in (_quiesce_helper_content.content | b64decode)"
+          - "'--cap-drop ALL' in (_quiesce_helper_content.content | b64decode)"
+          - "'alpine:3.21.3' in (_quiesce_helper_content.content | b64decode)"
+        fail_msg: "Quiesce helper does not enforce container hardening options or uses unpinned alpine"
+        success_msg: "Quiesce helper correctly enforces no-new-privileges, cap-drop ALL, and pinned alpine:3.21.3"
+
+    # ---------------------------------------------------------------------------
     # TIER-002-01 / ENGINE-002-01 / ENGINE-003-02 / ENGINE-005-02 - TIER2 VOLUME
     # HAPPY PATH (positive coverage). Every other volume test is negative by
     # construction: the chatwoot fixture deliberately mismatches mount_path

@@ -360,7 +360,7 @@ services:
       <<: *proxy-env
     ports:
       # Exposes on an internal port (8090) so it does NOT conflict with Caddy WAF on 80/443
-      - "${PLANE_PORT:-8090}:80"
+      - "${PLANE_BIND_IP:-127.0.0.1}:${PLANE_PORT:-8090}:80"
     volumes:
       - plane_proxy_config:/config
       - plane_proxy_data:/data

@@ -141,7 +141,8 @@ backup_db() {
 
 backup_volume_live() {
   local volume="$1"
-  docker run --rm -v "${volume}:/data:ro" alpine tar czf - -C /data . \
+  docker run --rm --security-opt no-new-privileges:true --cap-drop ALL \
+    -v "${volume}:/data:ro" "{{ backup_tar_image }}" tar czf - -C /data . \
     | restic backup --stdin \
         --stdin-filename "${APP}_${volume}_${TIMESTAMP}.tar.gz" \
         --tag "volume,${APP}" --host "$HOST"
