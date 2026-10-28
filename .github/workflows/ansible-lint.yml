@@ -15,7 +15,8 @@ concurrency:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    name: Lint Playbooks & YAML
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
 
@@ -118,7 +119,8 @@ jobs:
             yamllint_report.txt
 
   security-scan:
-    runs-on: ubuntu-latest
+    name: Secret Baseline Detection
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7.0.1
@@ -151,7 +153,7 @@ jobs:
           if [ ! -s secrets_report.json ]; then
             echo "✅ No secrets detected outside baseline."
           else
-            python3 -c "
+            uv run python -c "
             import json, sys
             with open('secrets_report.json') as f:
                 data = json.load(f)
@@ -167,7 +169,8 @@ jobs:
           fi
 
   ansible-check:
-    runs-on: ubuntu-latest
+    name: Ansible Structure Verification
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7.0.1

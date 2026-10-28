@@ -19,7 +19,7 @@ concurrency:
 jobs:
   security-audit:
     name: Security Audit Gates
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7.0.1
@@ -84,4 +84,4 @@ jobs:
 
       - name: Dependency vulnerability scan
         run: |
-          uvx pip-audit --path .venv
+          uv run pip-audit --path .venv
