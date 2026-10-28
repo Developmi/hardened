@@ -19,7 +19,7 @@ concurrency:
 jobs:
   lint-and-validate:
     name: Lint, Validate & Security
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7.0.1
@@ -88,7 +88,7 @@ jobs:
 
   gitleaks:
     name: Secret Leak Scan (gitleaks)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7.0.1
@@ -129,7 +129,7 @@ jobs:
 
   validate-roles:
     name: Validate Role Structure
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         role: [L1_os_baseline, L2_compliance, L3_observability, L4_networking, L6_runtime]
@@ -156,18 +156,20 @@ jobs:
           uv run ansible-galaxy collection install -r requirements.yml
 
       - name: Validate role structure
+        env:
+          ROLE: ${{ matrix.role }}
         run: |
           # L*-style roles have sublayers (general/, debian_12/, etc.)
-          if ls "roles/${{ matrix.role }}"/*/tasks/main.yml 2>/dev/null | head -1 | grep -q .; then
-            echo "✅ Role ${{ matrix.role }}: Structure valid"
-            uv run ansible-lint "roles/${{ matrix.role }}"
+          if ls "roles/$ROLE"/*/tasks/main.yml 2>/dev/null | head -1 | grep -q .; then
+            echo "✅ Role $ROLE: Structure valid"
+            uv run ansible-lint "roles/$ROLE"
           else
-            echo "⚠️  Role ${{ matrix.role }}: No executable tasks found in sublayers"
+            echo "⚠️  Role $ROLE: No executable tasks found in sublayers"
           fi
 
   convergence-check:
     name: Convergence & Idempotency Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7.0.1
@@ -200,7 +202,7 @@ jobs:
 
   workflow-security-audit:
     name: Workflow Security Audit (zizmor)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # actions/checkout@v7.0.1
@@ -223,4 +225,4 @@ jobs:
 
       - name: Audit workflows (zizmor)
         run: |
-          uv run zizmor .github/workflows
+          uv run zizmor .

@@ -40,13 +40,13 @@ repos:
 
   # Ansible-lint for playbook best practices
   - repo: https://github.com/ansible/ansible-lint
-    rev: v26.4.0
+    rev: v26.6.0
     hooks:
       - id: ansible-lint
         args: ["--strict", "--profile", "moderate"]
         files: ^(site|stacks|monitoring|nuke)\.yml$|^roles/.*\.yml$|^group_vars/.*\.yml$
         additional_dependencies:
-          - ansible-core==2.20.4
+          - ansible-core==2.21.1
 
   # YAML validation with strict rules
   - repo: https://github.com/adrienverge/yamllint

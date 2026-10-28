@@ -97,6 +97,10 @@ crash.*.log
 # Generic log files and log directories
 *.log
 logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # =================================================
 # CI/CD & Automation Artifacts
@@ -228,6 +232,7 @@ htmlcov/
 .cache/
 graphify-out/
 .codegraph/
+.engram/
 openspec/
 audit/
 
@@ -235,6 +240,19 @@ audit/
 dist/
 build/
 *.egg-info/
+
+# Deterministic local tooling & binaries
+tools/bin/
+tools/bin/*
+.tools/
+bin/
+local/
+
+# Go runtime & test coverage
+*.out
+*.test
+coverage.txt
+coverage.html
 
 # Docker and compose runtime artifacts
 *.pid

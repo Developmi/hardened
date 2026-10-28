@@ -1,11 +1,46 @@
+# Version Control & CI/CD
 .git
 .gitignore
 .github
+
+# Secrets, Environment & Credentials (CRITICAL)
+.env
+.env.*
+*.env
+!**/.env.example
+*.pem
+*.key
+*.pub
+id_rsa*
+id_ed25519*
+*.crt
+*.cer
+*.p12
+*.pfx
+cosign.key
+*.attestation
+sbom.*.json
+*.sops.*
+age/keys.txt
+*.vault
+secrets.yml
+group_vars/**/secrets.yml
+inventory/hosts.ini
+inventory/hosts.mapping.yml
+
+# Sensitive templates (contain vault variable references)
+**/Caddyfile.j2
+**/Caddyfile.example.j2
+
+# Local Development Tooling & Binaries
+tools/
+tools/bin/
+.tools/
+bin/
+
+# Python Virtual Environments & Caches
 .venv
 .uv
-.pnpm
-.pnpm-store
-node_modules
 __pycache__
 *.py[cod]
 *.pyd
@@ -19,30 +54,40 @@ __pycache__
 .coverage.*
 htmlcov
 .ipynb_checkpoints
-.env
-.env.*
-!**/.env.example
-group_vars/**/secrets.yml
-inventory/hosts.ini
-*.retry
-*.log
-logs
+*.egg-info
 dist
 build
-*.egg-info
+
+# Node Dependencies
+node_modules
+.pnpm
+.pnpm-store
+
+# Documentation & Tests
 docs
 tests
 scripts
+*.md
 LICENSE
 README.md
-*.md
+
+# Build & Compose Definitions
 Dockerfile*
-# Sensitive templates (contain vault variable references)
-**/Caddyfile.j2
-**/Caddyfile.example.j2
 docker-compose*.yml
+
+# IDEs & OS Metadata
 .idea/
 .vscode/
-cosign.key
-*.attestation
-sbom.*.json
+.DS_Store
+Thumbs.db
+*~
+*.swp
+
+# Logs & Temporary Files
+*.log
+logs
+tmp
+temp
+*.bak
+*.tmp
+*.retry

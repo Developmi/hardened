@@ -7,6 +7,7 @@
 # timer/service units are deployed and asserted.
 
 enable_backups: true
+deployed_apps: "{{ fixture_apps }}"
 
 # Storage provider + repository base URL (STORAGE-004/005, D10). The role
 # defaults build restic_repo_url / restic_appdata_repo_url from this value.

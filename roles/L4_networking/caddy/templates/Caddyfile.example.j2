@@ -124,7 +124,7 @@
             SecAuditEngine RelevantOnly
             SecAuditLog /data/logs/coraza-audit.log
             SecAuditLogFormat JSON
-            SecAuditLogParts ABCDEFGHIJKZ
+            SecAuditLogParts ABDFHKZ
         `
     }
 }
@@ -139,7 +139,7 @@
             SecAuditEngine RelevantOnly
             SecAuditLog /data/logs/coraza-audit.log
             SecAuditLogFormat JSON
-            SecAuditLogParts ABCDEFGHIJKZ
+            SecAuditLogParts ABDFHKZ
         `
     }
 }
@@ -154,7 +154,7 @@
             SecAuditEngine RelevantOnly
             SecAuditLog /data/logs/coraza-audit.log
             SecAuditLogFormat JSON
-            SecAuditLogParts ABCDEFGHIJKZ
+            SecAuditLogParts ABDFHKZ
         `
     }
 }
@@ -276,6 +276,7 @@
             {% if ph.standard | default(false) %}
             header_up Host      {host}
             header_up X-Real-IP {remote_host}
+            header_up X-Request-ID {http.request.uuid}
             {% endif %}
             header_down -Server
             header_down -X-Powered-By
@@ -289,6 +290,7 @@
             {% if ph.standard | default(false) %}
             header_up Host      {host}
             header_up X-Real-IP {remote_host}
+            header_up X-Request-ID {http.request.uuid}
             {% endif %}
             header_down -Server
             header_down -X-Powered-By
@@ -302,6 +304,7 @@
         {% if ph.standard | default(false) %}
         header_up Host      {host}
         header_up X-Real-IP {remote_host}
+        header_up X-Request-ID {http.request.uuid}
         {% endif %}
         header_down -Server
         header_down -X-Powered-By

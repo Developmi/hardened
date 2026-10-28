@@ -7,6 +7,11 @@ services:
     image: {{ node_exporter_image }}
     container_name: node-exporter
     restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
