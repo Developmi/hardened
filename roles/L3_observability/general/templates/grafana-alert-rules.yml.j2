@@ -257,7 +257,7 @@ groups:
               expression: A
               conditions:
                 - evaluator:
-                    type: gt
+                    type: lt
                     params:
                       - {{ observability_alert_cert_expiry_days | int * 86400 }}
                   operator:

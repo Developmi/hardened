@@ -14,6 +14,8 @@ services:
       - '--retentionPeriod={{ observability_retention_period }}'
       - '--promscrape.config=/etc/victoriametrics/scrape.yml'
       - '--httpListenAddr=:8428'
+    security_opt:
+      - no-new-privileges:true
     networks:
       - {{ observability_stack_network_name }}
 
@@ -28,6 +30,8 @@ services:
       - {{ app_base_dir }}/observability/loki-data:/loki
       - {{ app_base_dir }}/observability/loki-config.yml:/etc/loki/local-config.yaml:ro
     command: -config.file=/etc/loki/local-config.yaml
+    security_opt:
+      - no-new-privileges:true
     networks:
       - {{ observability_stack_network_name }}
 
@@ -82,6 +86,8 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_ALERTING_ENABLED=true
       - GF_UNIFIED_ALERTING_ENABLED=true
+    security_opt:
+      - no-new-privileges:true
     networks:
       - {{ observability_stack_network_name }}
 
@@ -96,6 +102,8 @@ services:
       - {{ app_base_dir }}/observability/blackbox-config.yml:/etc/blackbox_exporter/config.yml:ro
     command:
       - '--config.file=/etc/blackbox_exporter/config.yml'
+    security_opt:
+      - no-new-privileges:true
     networks:
       - {{ observability_stack_network_name }}
 
