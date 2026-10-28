@@ -374,7 +374,19 @@
         username: "{{ github_username }}"
         password: "{{ vault_github_token }}"
         reauthorize: true
+      register: _ghcr_login
+      failed_when: false
       no_log: true
+
+    - name: Fail with actionable guidance if GHCR login fails
+      ansible.builtin.fail:
+        msg: >-
+          GHCR authentication failed for user '{{ github_username }}'.
+          Verify that 'vault_github_token' in inventory/group_vars/all/secrets.sops.yml:
+          1. Is a valid, unexpired GitHub Personal Access Token (classic or fine-grained).
+          2. Has the 'read:packages' permission scope enabled.
+          3. Has organization/repository access granted for 'developmi/caddy-waf' if using fine-grained PAT.
+      when: _ghcr_login.failed | default(false)
 
     - name: Pre-pull Caddy image before verification
       community.docker.docker_image:
