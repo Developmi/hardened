@@ -56,4 +56,4 @@ This policy covers the Ansible playbooks, roles, templates, and Docker Compose c
 
 ## Related Documents
 
-- [docs/compliance/COMPLIANCE.md](docs/compliance/INDEX.md) - Executive compliance overview
+- [docs/compliance/INDEX.md](docs/compliance/INDEX.md) - Executive compliance overview

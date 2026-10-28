@@ -6,11 +6,12 @@
 
 _A layered infrastructure stack built with Ansible, Docker and Zero Trust principles._
 
+![Version 7.0.0](https://img.shields.io/badge/Version-7.0.0-0A84FF?style=for-the-badge&logo=semver&logoColor=white)
 ![Python 3.14](https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Ansible Core 2.21.1](https://img.shields.io/badge/Ansible_Core-2.21.1-EE0000?style=for-the-badge&logo=ansible&logoColor=white)
 ![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Standard NIST 800-53](https://img.shields.io/badge/Standard-NIST_800--53-0B5CAD?style=for-the-badge)
-![Status In Development](https://img.shields.io/badge/Status-In_Development-orange?style=for-the-badge)
+![Status Production Ready](https://img.shields.io/badge/Status-Production_Ready-brightgreen?style=for-the-badge)
 ![License MIT](https://img.shields.io/badge/License-MIT_©-blue?style=for-the-badge)
 ![CI GitHub Actions](https://img.shields.io/badge/CI-GitHub_Actions-blue?style=for-the-badge&logo=githubactions&logoColor=white)
 ![Maintainer Miguel Lozano](https://img.shields.io/badge/Maintainer-Miguel_Lozano-black?style=for-the-badge)
@@ -370,17 +371,40 @@ Current quality gates include:
 
 ## 🧪 Tests
 
-This project is validated through Make-driven quality gates. For production-grade role testing, use `molecule` or `ansible-test` with a local inventory:
+This project enforces end-to-end quality and compliance verification through a multi-tiered test pipeline spanning static validation, pre-commit hygiene, idempotency checks, and automated role/layer integration testing via **Molecule**:
+
+### 1. Quality Gates & Linting
+Validate syntax, role structure, YAML formatting, and GitHub Actions security workflows locally:
 
 ```bash
-make check-toolchain
-make lint PLAYBOOK=playbooks/site.yml
+# Bootstrap toolchain and pre-commit hooks
+make setup
+
+# Run strict linting suite (yamllint + ansible-lint 26.6.0 + zizmor)
+make lint
+
+# Execute all pre-commit hooks
 make precommit-run
 ```
 
-**CI pipeline:** All playbooks pass syntax check and linting on every PR via [GitHub Actions](.github/workflows/ci.yml). A dedicated `security-audit.yml` workflow runs on version tags for release gating.
+### 2. Integration Testing with Molecule
+Automated role and layer testing is executed via [Molecule](https://molecule.readthedocs.io/) using the Docker driver against systemd-enabled Debian 12 (`bookworm`) and Ubuntu 22.04 (`jammy`) containers. Each scenario exercises the complete verification lifecycle (`dependency` → `destroy` → `syntax` → `create` → `prepare` → `converge` → `idempotence` → `verify` → `cleanup` → `destroy`):
 
-> **Note:** Automated role-level integration testing (e.g., Molecule) is on the roadmap. Current validation focuses on syntax, linting, idempotency dry-runs, and secret scanning - all exercised through `make` targets and CI.
+```bash
+# Run the complete Molecule test suite across all layers
+make test
+
+# Run a focused layer scenario
+make test-layer LAYER=backup
+make test-layer LAYER=L1_os_baseline
+make test-layer LAYER=L2_compliance
+make test-layer LAYER=L3_observability
+make test-layer LAYER=L4_networking
+```
+
+### 3. CI/CD & Security Audit Pipelines
+- **Pull Request Gates:** [GitHub Actions](.github/workflows/ci.yml) validates playbook syntax, role directories, `ansible-lint`, `yamllint`, `gitleaks` credential scans, and workflow security audits via `zizmor` on every commit.
+- **Security Audit Gates:** A dedicated [security-audit.yml](.github/workflows/security-audit.yml) workflow runs on PRs and release tags (`v*`), executing credential pattern scans, SOPS value leak checks, and dependency vulnerability scans (`uv run pip-audit --path .venv`).
 
 ---
 

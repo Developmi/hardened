@@ -3,14 +3,14 @@ title: Developer Onboarding
 type: operations
 owner: maintainers
 audience: maintainer
-version: v6.0.0
-last-reviewed: 2026-07-16
+version: v7.0.0
+last-reviewed: 2026-10-27
 status: active
 project: developmi-hardened
 repo: github.com/Developmi/hardened
 ---
 
-# Developer Onboarding - Developmi Hardened v6.0.0
+# Developer Onboarding - Developmi Hardened v7.0.0
 
 5-step developer setup sequence to go from zero to running your first Ansible playbook.
 
@@ -22,7 +22,7 @@ repo: github.com/Developmi/hardened
 | ---------------- | --------------------------------------------- | -------------------------------------------------- |
 | **Python**       | 3.14+                                         | `apt install python3.14` or via `pyenv`            |
 | **uv**           | latest stable                                 | `curl -LsSf https://astral.sh/uv/install.sh \| sh` |
-| **ansible-core** | 2.21.1 (pinned)                               | `uv pip install ansible-core==2.21.1`              |
+| **ansible-core** | 2.21.1 (pinned)                               | Managed via `uv sync` (`pyproject.toml`)           |
 | **Git**          | 2.40+                                         | `apt install git`                                  |
 | **OS**           | Linux (Debian 12 or Ubuntu 22.04 recommended) | -                                                  |
 
@@ -32,7 +32,7 @@ repo: github.com/Developmi/hardened
 
 ```bash
 git clone https://github.com/Developmi/hardened.git
-cd stack
+cd hardened
 ```
 
 ---
@@ -117,7 +117,7 @@ ssh <target-host> "sysctl kernel.kptr_restrict"
 
 | Issue                           | Resolution                                                           |
 | ------------------------------- | -------------------------------------------------------------------- |
-| `ansible-core` version mismatch | `uv pip install ansible-core==2.21.1 --force-reinstall`              |
+| `ansible-core` version mismatch | `uv sync --reinstall-package ansible-core`                           |
 | SOPS age key not found          | Ensure `~/.config/sops/age/keys.txt` exists (see Step 3)             |
 | SSH connection refused          | Target host must have SSH enabled. Verify with `ssh <host> echo ok`  |
 | `uv sync` fails on ARM64        | ARM64 is fully supported. Ensure Python 3.14+ is installed for ARM64 |
@@ -127,7 +127,7 @@ ssh <target-host> "sysctl kernel.kptr_restrict"
 ## Related Documents
 
 - [../architecture/ARCHITECTURE.md](../architecture/ARCHITECTURE.md) - 7-layer platform architecture
-- [../project/GLOSSARY.md](../GLOSSARY.md) - SDD/project workflow terminology
+- [../GLOSSARY.md](../GLOSSARY.md) - SDD/project workflow terminology
 - [../project/ONBOARDING.md](../project/ONBOARDING.md) - Project workflow onboarding
 - [INCIDENT_RESPONSE_DR.md](INCIDENT_RESPONSE_DR.md) - Incident response and disaster recovery procedures
 - [VERSION_PINS.md](VERSION_PINS.md) - Pinned component versions

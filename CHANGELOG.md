@@ -1,12 +1,64 @@
 ---
 title: Changelog
-last_updated: 2026-08-09
+last_updated: 2026-10-27
 owner: TBD
 audience: all
 status: active
 ---
 
 # Changelog
+
+## [7.0.0] - 2026-10-27
+
+### Added
+- **Platform Hardening v2**:
+  - Configured post-quantum SSH key exchange algorithms (`sntrup761x25519-sha512@openssh.com`) alongside strict Curve25519 primitives.
+  - Implemented passwordless `sudo` privileges scoped strictly to `dev_admin`.
+  - Added hardened, centralized login MOTD banner with dynamic platform version definition.
+  - Deployed per-file `auditd` File Integrity Monitoring (FIM) rules guarding Caddy, ingress configs, and authentication barriers.
+  - Introduced controlled rolling reboot (`make reboot TARGET=<host>`) and safe package upgrade (`make upgrade TARGET=<host>`) operational workflows.
+- **Unified Backup Engine & Quiesce Library (Phase 6)**:
+  - Consolidated backup operations into a single per-app backup engine under `roles/L6_runtime/backup/`.
+  - Introduced declarative backup schema for application profiles (`apps/<name>/backup.yml`) supporting database adapters (Postgres, MariaDB, ClickHouse) and filesystem snapshots.
+  - Added automated quiesce and unquiesce lifecycle hooks ensuring transactional consistency before snapshot generation.
+  - Implemented multi-destination storage provider abstraction supporting Cloudflare R2, S3-compatible endpoints, and local secondary medium seeding (`restic copy`).
+  - Added automated restore verification routines emitting auditable evidence reports.
+- **Caddy WAF Ingress & Sidecar UI**:
+  - Integrated `ghcr.io/developmi/caddy-waf:v3.6.1` with OWASP CRS 4.30.0, Coraza 3.7.0, and Coraza-Caddy 2.6.1.
+  - Deployed `caddy-waf-ui:v1.4.0` sidecar administrative dashboard bound exclusively to Tailscale Serve on the control plane (no public port exposure).
+  - Added deploy-time sha256 container image digest gating.
+  - Added operational Makefile targets for edge proxy management: `verify-caddy`, `heal-caddy`.
+- **Container Runtime Containment**:
+  - Enforced strict least-privilege security controls across containerized stacks: `security_opt: [no-new-privileges:true]` and `cap_drop: [ALL]` applied to backup runners and L3 observability services.
+  - Bound proxy ingress on Plane (`apps/plane/docker-compose.yml`) to loopback (`127.0.0.1`) to eliminate unintended external host exposure.
+- **Molecule Testing Framework**:
+  - Full automated integration testing coverage across platform layers using Molecule Docker driver: `backup`, `L1_os_baseline`, `L2_compliance`, `L3_observability`, and `L4_networking`.
+  - Systemd-enabled Debian 12 (`bookworm`) and Ubuntu 22.04 (`jammy`) platform support with converge, idempotence, and assertion verification.
+  - Makefile orchestrator targets `make test` and `make test-layer LAYER=<name>`.
+- **Secrets Management Architecture (SOPS + Age)**:
+  - Replaced monolithic Ansible Vault with SOPS + age using native `community.sops.sops` vars plugin.
+  - Granular file encryption with regex path scoping (`.sops.yaml`) and decoupled manager variables (`managers/portainer.sops.yml`).
+  - Native Makefile targets: `sops-init`, `sops-edit`, `sops-encrypt`, and `sops-view`.
+
+### Changed
+- **Toolchain Modernization**: Upgraded runtime floor to Python `>=3.14`, pinned `ansible-core==2.21.1`, and aligned `ansible-lint==26.6.0`.
+- **Backup Stack Pinning**: Pinned Restic binary and container image to `0.19.1` with per-architecture sha256 verification on AMD64 and ARM64.
+- **CI/CD Hardening**:
+  - Pinned all GitHub Actions to full 40-character commit SHAs.
+  - Scoped GitHub token permissions strictly to `contents: read` and disabled credential persistence in `actions/checkout`.
+  - Integrated `zizmor` GitHub Actions workflow security audit into PR validation.
+  - Pinned Gitleaks scanner to license-safe release `v8.23.3` with verified SHA256 checksums.
+
+### Security
+- **Supply Chain Vulnerability Eradication**:
+  - Regenerated lockfile dependencies (`uv.lock`) resolving 17 known vulnerabilities (1 CRITICAL, 6 HIGH) across transitive dependencies (`certifi`, `black`, `filelock`, `virtualenv`).
+  - Integrated `pip-audit==2.10.1` into `dev` dependency group and aligned local validation with GitHub Actions (`uv run pip-audit --path .venv`).
+  - Enforced pre-commit and CI secrets scanning baseline to guarantee zero plaintext credentials or unencrypted `.sops.yml` files enter version control.
+
+### Removed
+- Retired legacy `backup-db` role in favor of the unified L6 backup engine.
+- Purged dead and orphaned secrets from templates and inventories (`portainer_url`, `portainer_username`, `portainer_password`, redundant observability network keys).
+- Eliminated legacy unpinned `uvx` invocations in security workflows.
 
 ## v6.1.0-dev (2026-08-02)
 
