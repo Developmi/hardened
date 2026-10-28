@@ -15,7 +15,6 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint Playbooks & YAML
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -119,7 +118,6 @@ jobs:
             yamllint_report.txt
 
   security-scan:
-    name: Secret Baseline Detection
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
@@ -169,7 +167,6 @@ jobs:
           fi
 
   ansible-check:
-    name: Ansible Structure Verification
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
