@@ -219,7 +219,7 @@
   ansible.builtin.file:
     path: "{{ app_base_dir }}/ingress/caddy-data/logs/coraza-audit.log"
     state: touch
-    mode: "0644"
+    mode: "0640"
     owner: "{{ _caddy_effective_uid | int }}"
     group: "{{ _caddy_effective_gid | int }}"
     modification_time: preserve
@@ -347,79 +347,6 @@
   when: crowdsec_acl_user | length == 0
   tags: [l4-networking, caddy, nist, au-12, si-4]
 
-- name: AU-12/SI-4 | Container runtime log volume probe chain
-  tags:
-    - l4-networking
-    - caddy
-    - nist
-    - au-12
-    - si-4
-  when: not _molecule_testing | default(false)
-  block:
-    - name: AU-12/SI-4 | Probe Caddy log volume write access from container runtime
-      ansible.builtin.command:
-        cmd: >-
-          docker run --rm
-          --user {{ caddy_user_uid }}:{{ caddy_user_gid }}
-          -v {{ app_base_dir }}/ingress/caddy-data:/data
-          {{ caddy_image }}
-          sh -lc 'mkdir -p /data/logs && touch /data/logs/.ansible-write-test && rm -f /data/logs/.ansible-write-test'
-      register: caddy_log_volume_probe
-      changed_when: false
-      failed_when: false
-      tags: [l4-networking, caddy, nist, au-12, si-4]
-
-    - name: AU-12/SI-4 | Reconcile Caddy log volume ownership when probe fails
-      ansible.builtin.command:
-        cmd: >-
-          chown -R {{ _caddy_effective_uid | int }}:{{ _caddy_effective_gid | int }}
-          {{ app_base_dir }}/ingress/caddy-data
-          {{ app_base_dir }}/ingress/caddy-config
-      when: caddy_log_volume_probe.rc != 0
-      changed_when: true
-      tags: [l4-networking, caddy, nist, au-12, si-4]
-
-    - name: AU-12/SI-4 | Re-probe Caddy log volume write access after reconciliation
-      ansible.builtin.command:
-        cmd: >-
-          docker run --rm
-          --user {{ caddy_user_uid }}:{{ caddy_user_gid }}
-          -v {{ app_base_dir }}/ingress/caddy-data:/data
-          {{ caddy_image }}
-          sh -lc 'mkdir -p /data/logs && touch /data/logs/.ansible-write-test && rm -f /data/logs/.ansible-write-test'
-      register: caddy_log_volume_reprobe
-      changed_when: false
-      failed_when: false
-      when: caddy_log_volume_probe.rc != 0
-      tags: [l4-networking, caddy, nist, au-12, si-4]
-
-    - name: AU-12/SI-4 | Capture log-volume ownership snapshot for diagnostics
-      ansible.builtin.command:
-        cmd: >-
-          stat -c '%u:%g %a %n'
-          {{ app_base_dir }}/ingress/caddy-data
-          {{ app_base_dir }}/ingress/caddy-data/logs
-          {{ app_base_dir }}/ingress/caddy-data/logs/access.log
-          {{ app_base_dir }}/ingress/caddy-data/logs/coraza-audit.log
-      register: caddy_log_volume_stat
-      changed_when: false
-      failed_when: false
-      when: caddy_log_volume_probe.rc != 0
-      tags: [l4-networking, caddy, nist, au-12, si-4]
-
-    - name: AU-12/SI-4 | Fail if Caddy log volume remains unwritable after remediation
-      ansible.builtin.assert:
-        that:
-          - caddy_log_volume_probe.rc == 0 or caddy_log_volume_reprobe.rc == 0
-        fail_msg: >-
-          Caddy log volume is still not writable by the container runtime after ownership reconciliation.
-          Check userns remapping, bind-mount ownership, and host ACLs on {{ app_base_dir }}/ingress/caddy-data.
-          Probe rc={{ caddy_log_volume_probe.rc | default('n/a') }},
-          Reprobe rc={{ caddy_log_volume_reprobe.rc | default('n/a') }}.
-          Ownership snapshot: {{ caddy_log_volume_stat.stdout | default('unavailable') }}.
-        success_msg: "Caddy log volume write access is valid."
-      tags: [l4-networking, caddy, nist, au-12, si-4]
-
 # ------------------------------------------------------------------------------
 # DOCKER COMPOSE DEPLOY
 # ------------------------------------------------------------------------------
@@ -477,6 +404,79 @@
             (caddy_image_info.image.Digest is defined and caddy_image_info.image.Digest == caddy_image_digest) or
             (caddy_image_info.images[0].RepoDigests is defined and (caddy_image_digest in (caddy_image_info.images[0].RepoDigests | join(' '))))
           )
+
+    # --------------------------------------------------------------------------
+    # CONTAINER RUNTIME LOG VOLUME PROBE CHAIN
+    # --------------------------------------------------------------------------
+    # Must run AFTER image pull and digest verification so docker run executes
+    # against the authenticated local image without failing with rc=125.
+    - name: AU-12/SI-4 | Probe Caddy log volume write access from container runtime
+      ansible.builtin.command:
+        cmd: >-
+          docker run --rm
+          --entrypoint ""
+          --user {{ caddy_user_uid }}:{{ caddy_user_gid }}
+          -v {{ app_base_dir }}/ingress/caddy-data:/data
+          {{ caddy_image }}
+          sh -lc 'mkdir -p /data/logs && touch /data/logs/.ansible-write-test && rm -f /data/logs/.ansible-write-test'
+      register: caddy_log_volume_probe
+      changed_when: false
+      failed_when: false
+      tags: [l4-networking, caddy, nist, au-12, si-4]
+
+    - name: AU-12/SI-4 | Reconcile Caddy log volume ownership when probe fails
+      ansible.builtin.command:
+        cmd: >-
+          chown -R {{ _caddy_effective_uid | int }}:{{ _caddy_effective_gid | int }}
+          {{ app_base_dir }}/ingress/caddy-data
+          {{ app_base_dir }}/ingress/caddy-config
+      when: caddy_log_volume_probe.rc != 0
+      changed_when: true
+      tags: [l4-networking, caddy, nist, au-12, si-4]
+
+    - name: AU-12/SI-4 | Re-probe Caddy log volume write access after reconciliation
+      ansible.builtin.command:
+        cmd: >-
+          docker run --rm
+          --entrypoint ""
+          --user {{ caddy_user_uid }}:{{ caddy_user_gid }}
+          -v {{ app_base_dir }}/ingress/caddy-data:/data
+          {{ caddy_image }}
+          sh -lc 'mkdir -p /data/logs && touch /data/logs/.ansible-write-test && rm -f /data/logs/.ansible-write-test'
+      register: caddy_log_volume_reprobe
+      changed_when: false
+      failed_when: false
+      when: caddy_log_volume_probe.rc != 0
+      tags: [l4-networking, caddy, nist, au-12, si-4]
+
+    - name: AU-12/SI-4 | Capture log-volume ownership snapshot for diagnostics
+      ansible.builtin.command:
+        cmd: >-
+          stat -c '%u:%g %a %n'
+          {{ app_base_dir }}/ingress/caddy-data
+          {{ app_base_dir }}/ingress/caddy-data/logs
+          {{ app_base_dir }}/ingress/caddy-data/logs/access.log
+          {{ app_base_dir }}/ingress/caddy-data/logs/coraza-audit.log
+      register: caddy_log_volume_stat
+      changed_when: false
+      failed_when: false
+      when: caddy_log_volume_probe.rc != 0
+      tags: [l4-networking, caddy, nist, au-12, si-4]
+
+    - name: AU-12/SI-4 | Fail if Caddy log volume remains unwritable after remediation
+      ansible.builtin.assert:
+        that:
+          - caddy_log_volume_probe.rc == 0 or caddy_log_volume_reprobe.rc == 0
+        fail_msg: >-
+          Caddy log volume is still not writable by the container runtime after ownership reconciliation.
+          Check userns remapping, bind-mount ownership, and host ACLs on {{ app_base_dir }}/ingress/caddy-data.
+          Probe rc={{ caddy_log_volume_probe.rc | default('n/a') }},
+          Probe stderr={{ caddy_log_volume_probe.stderr | default('') | trim }},
+          Reprobe rc={{ caddy_log_volume_reprobe.rc | default('n/a') }},
+          Reprobe stderr={{ caddy_log_volume_reprobe.stderr | default('') | trim }}.
+          Ownership snapshot: {{ caddy_log_volume_stat.stdout | default('unavailable') }}.
+        success_msg: "Caddy log volume write access is valid."
+      tags: [l4-networking, caddy, nist, au-12, si-4]
 
     # --------------------------------------------------------------------------
     # CANONICAL CADDYFILE FORMATTING (must run BEFORE the compose render)
