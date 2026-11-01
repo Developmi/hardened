@@ -27,9 +27,8 @@
       - ingress_security_profiles is defined
     fail_msg: >-
       ingress_services is empty or undefined.
-      SOPS secrets may not be decryptable or secrets.sops.yml is malformed.
+      Ensure inventory/group_vars/all/ingress.yml exists (copy from ingress.yml.example).
       Aborting to prevent deploying an empty Caddyfile.
-      Verify: make sops-view
     success_msg: "Ingress routing catalog is present - {{ ingress_services | length }} service(s) defined."
   tags: [l4-networking]
 
