@@ -1,0 +1,54 @@
+---
+# =============================================================================
+# Ingress Services & Security Profiles (Routing Catalog)
+# =============================================================================
+# Single Source of Truth for reverse proxy routing (Caddy / Nginx / Traefik).
+# Copy this file to inventory/group_vars/all/ingress.yml (ignored by .gitignore).
+#
+# PRIVACY & SECURITY:
+#   Domain names, upstreams, and routing topology are uncommitted configuration
+#   to protect client privacy in this open-source repository.
+#   Sensitive cryptographic secrets (TLS private keys, UI tokens) stay in
+#   inventory/group_vars/all/secrets.sops.yml (SOPS + age encrypted).
+#
+# VARIABLE OWNERSHIP (four layers - NEVER mix):
+#   Layer 1 | SOPS (secrets.sops.yml)    → certs (privkeys), API keys, UI tokens
+#   Layer 2 | Ingress (ingress.yml)      → domains, upstreams, routes, security profiles
+#   Layer 3 | Inventory (hosts.ini)      → caddy_node_id, waf_mode_default (per host)
+#   Layer 4 | Group vars (brain/muscle)  → caddy_type, caddy_admin_enabled (group defaults)
+# =============================================================================
+
+# Security profiles referenced by ingress_services[*].security_profile.
+# Each profile toggles the WAF (Coraza) and VPN-only restriction.
+# Default baseline profiles can also be overridden here.
+ingress_security_profiles:
+  public_waf:
+    import_waf: true
+    import_vpn_only: false
+
+  basicauth:
+    import_waf: false
+    import_vpn_only: false
+
+  vpn_only:
+    import_waf: true
+    import_vpn_only: true
+
+# Routing catalog: one entry per domain Caddy must serve.
+# Rendered by roles/L4_networking/caddy/templates/Caddyfile.j2.
+# Filtered per node: target_group matching node group or caddy_node_id.
+# Examples: "brain" | "muscle" | "muscle-1" | ["muscle-1", "brain-1"].
+ingress_services:
+  - name: app-example                  # label only - used in logs/warnings
+    domain: app.example.invalid        # required - public hostname (RFC 2606)
+    upstream: app:8080                 # required - container:port
+    client: client_primary             # required - cert source; MUST exist in
+                                       # cloudflare_origin_certs in secrets.sops.yml
+    target_group: brain                # required - routing filter (node group or ID)
+    security_profile: public_waf       # required - MUST exist in ingress_security_profiles
+    tls_client_auth: cloudflare        # optional - enables Cloudflare Origin Pull mTLS
+    proxy_headers:
+      standard: true                   # forward Host + X-Real-IP to the backend
+      websocket: false                 # true = bypass WAF for WebSocket upgrades
+    headers:
+      X-Custom-Header: "PLACEHOLDER_HEADER_VALUE"

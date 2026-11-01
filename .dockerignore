@@ -30,7 +30,6 @@ inventory/hosts.mapping.yml
 
 # Sensitive templates (contain vault variable references)
 **/Caddyfile.j2
-**/Caddyfile.example.j2
 
 # Local Development Tooling & Binaries
 tools/

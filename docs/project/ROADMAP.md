@@ -169,7 +169,7 @@ This project starts at v6.0.0. Prior development history (v1.0.0 - v5.5.0) is ma
 
 ### U2.4 Graphify Codebase Mapping (Evaluation)
 
-- Evaluate `pip install graphifyy` for generating cross-reference documentation.
+- Evaluate `uv tool run graphifyy` for generating cross-reference documentation.
 - **Known limitation**: Like CodeGraph, Graphify treats YAML as DOCS type only (no symbolic analysis). Useful for general project topology, not Ansible-specific navigation.
 - If evaluation passes: integrate into CI as optional documentation artifact.
 - If evaluation fails: document the limitation and rely on `make graph` + structured docs.

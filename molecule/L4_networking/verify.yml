@@ -151,7 +151,7 @@
     # ---------------------------------------------------------------------------
     # CONTRACT: ui_managed overlay import contract (D2)
     # Mirrors caddy-waf-ui tests/integration/caddyfile_test.go assertions against
-    # the tracked SSOT render (Caddyfile.example.j2 -> Caddyfile.contract).
+    # the tracked SSOT render (Caddyfile.j2 -> Caddyfile.contract).
     # ---------------------------------------------------------------------------
     - name: "GIVEN: Slurp the contract-rendered Caddyfile"
       ansible.builtin.slurp:
@@ -383,18 +383,18 @@
         fail_msg: "SDD Failed: UI service depends_on must reference the compose SERVICE key 'caddy' (container_name is caddy-waf) with service_healthy"
         success_msg: "UI service depends_on caddy (service name) with service_healthy condition"
 
-    - name: "THEN: Audit log file exists with mode 0644"
+    - name: "THEN: Audit log file exists with mode 0640"
       ansible.builtin.stat:
         path: /opt/user/apps/testing/ingress/caddy-data/logs/coraza-audit.log
       register: audit_log_stat
 
-    - name: "THEN: Audit log mode is 0644 (UI can read)"
+    - name: "THEN: Audit log mode is 0640 (hardened)"
       ansible.builtin.assert:
         that:
           - audit_log_stat.stat.exists
-          - audit_log_stat.stat.mode == "0644"
-        fail_msg: "SDD Failed: audit log missing or mode is not 0644 (got {{ audit_log_stat.stat.mode | default('missing') }})"
-        success_msg: "Audit log exists with mode 0644"
+          - audit_log_stat.stat.mode == "0640"
+        fail_msg: "SDD Failed: audit log missing or mode is not 0640 (got {{ audit_log_stat.stat.mode | default('missing') }})"
+        success_msg: "Audit log exists with mode 0640"
 
     # ---------------------------------------------------------------------------
     # E2E ASSERTS (gated on ghcr images being present in local daemon)

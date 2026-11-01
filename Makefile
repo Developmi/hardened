@@ -59,6 +59,32 @@ setup: ## Bootstrap local environment (sync + collections + pre-commit)
 	$(PKG) run pre-commit install
 	@echo "=== Toolchain Ready ==="
 
+tools: setup ## Standard contract: Bootstrap and verify local toolchain
+
+doctor: ## Diagnostic environment and playbook readiness check
+	@echo "=== System & Toolchain Doctor ==="
+	@echo "OS: $$(uname -s) $$(uname -m)"
+	@which uv >/dev/null && echo "uv: $$(uv --version)" || echo "uv: MISSING"
+	@which python3 >/dev/null && echo "python3: $$(python3 --version)" || echo "python3: MISSING"
+	@$(PKG) run ansible --version | head -n 1
+	@which sops >/dev/null && echo "sops: $$(sops --version)" || echo "sops: NOT FOUND in PATH (optional host tool)"
+	@which trivy >/dev/null && echo "trivy: $$(trivy --version | head -n 1)" || echo "trivy: NOT FOUND in PATH"
+	@which cosign >/dev/null && echo "cosign: $$(cosign version 2>&1 | head -n 1)" || echo "cosign: NOT FOUND in PATH"
+	@echo "=== Playbook & Inventory Validation ==="
+	@./scripts/setup.sh --validate
+
+test-security: ## Audit Python dependencies (pip-audit) and workflow security (zizmor)
+	@echo "==> 1/2 Auditing Python dependencies (pip-audit)..."
+	@$(PKG) run --group dev pip-audit
+	@echo "==> 2/2 Auditing GitHub Actions workflows (zizmor)..."
+	@$(PKG) run zizmor .
+	@echo "=== Security Gates: ALL PASSED ==="
+
+release-ready: lint test-security ## Comprehensive pre-release gate (lint + security + doctor)
+	@echo "==> Running environment & playbook validation..."
+	@$(MAKE) doctor
+	@echo "=== Release Readiness Gate: ALL CHECKS PASSED ==="
+
 sync: ## Sync Python dependencies with uv
 	@echo "Running $(PKG) sync..."
 	$(PKG) sync
@@ -283,6 +309,7 @@ test-layer:
 	@$(MAKE) test LAYER=$(LAYER)
 
 .PHONY: help setup sync lint precommit test show-inventory \
+	tools doctor test-security release-ready \
 	sops-init sops-edit sops-encrypt sops-view \
 	deploy-bootstrap deploy-hardening deploy-engine deploy-edge \
 	deploy-monitoring deploy-backups deploy-portainer deploy-platform \

@@ -139,6 +139,7 @@ services:
     read_only: true
     tmpfs:
       - /tmp
+    # Upstream contract: Twenty CRM official image entrypoint requirement
     command: ["yarn", "worker:prod"]
     depends_on:
       twenty-db:
