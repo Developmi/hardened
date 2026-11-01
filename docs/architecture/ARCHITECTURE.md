@@ -376,6 +376,32 @@ Determined by `group_vars/{brain,muscle,local}/main.yml`. A host's inventory gro
 - `muscle/main.yml` → `hardening_profile: server`
 - `local/main.yml` → `hardening_profile: workstation`
 
+### Operational Scale & Sizing Boundaries
+
+This repository is engineered under the **"Boring is Better"** philosophy: providing enterprise-grade security hardening (NIST SP 800-53, CIS OS/Docker benchmarks, kernel confinement, Zero Trust networking via Tailscale, and automated Restic disaster recovery) directly on Bare Metal hosts or VPS instances without requiring Kubernetes.
+
+#### Hardware Profiles & Node Allocation
+
+| Host Class | Hardware Profile | Recommended Count | Architectural Role & Workload Distribution |
+| :--- | :--- | :--- | :--- |
+| **`brain`** | **High-Spec** (8–16 vCPU, 32–64 GB RAM) | **1 – 3 nodes** | Centralized control plane: VictoriaMetrics, Loki, Grafana, Portainer. 3 nodes provide active quorum for HA. |
+| **`brain`** | **Low-Spec** (2–4 vCPU, 4–8 GB RAM) | **3 – 5 nodes** | Role-partitioned control plane: dedicated nodes for Ingress/VPN, metrics ingestion, log indexing (Loki), and management across low-cost VPS instances. |
+| **`muscle`** | **Any compute tier** | **1 – 50 nodes** | Standard push-based Ansible sweet spot. Full parallel execution with low drift and minimal latency. |
+| **`muscle`** | **Any compute tier** | **50 – 100 nodes** | Upper operational ceiling for push-based Ansible. Deployments should target specific nodes or tags (`--limit muscle-X`). |
+
+#### Scaling Beyond 100 Nodes (Ecosystem Positioning)
+
+> [!NOTE]
+> **Surpassing 100 worker nodes does NOT invalidate this repository.**
+> This project serves as **Phase 1: Hardened Foundations**. For hyper-scale topologies (>100 muscle nodes), push-based SSH routing can be transitioned to dynamic service discovery (Consul, CoreDNS) or container orchestrators (Nomad, Kubernetes). This repository remains the foundational hardening and compliance baseline that configures OS security, sysctl, firewalls, and storage across bare metal before any higher-level orchestrator runs.
+
+#### Ingress Routing Catalog & Secrets Architecture
+
+Routing topology and secrets adhere to strict separation of concerns:
+- **Routing Catalog** (`inventory/group_vars/all/ingress.yml`): Plain YAML catalog of domains, upstreams, headers, and security profiles. Ignored by `.gitignore` to prevent leaking private client infrastructure in open-source environments (template provided in `ingress.yml.example`).
+- **Cryptographic Secrets** (`inventory/group_vars/all/secrets.sops.yml`): Strictly reserved for sensitive credentials (TLS private keys in `cloudflare_origin_certs`, `caddy_ui_token`, R2 access keys).
+- **Ingress Template** (`roles/L4_networking/caddy/templates/Caddyfile.j2`): 100% data-driven, version-controlled Jinja2 template with zero hardcoded values, featuring automatic global `metrics` export and per-service WAF/TLS client routing.
+
 ---
 
 ## 8. Application Profile Schema (Reduced 6-Field Specification)
