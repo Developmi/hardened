@@ -8,6 +8,20 @@ status: active
 
 # Changelog
 
+## [Unreleased]
+
+### Added
+- **Deterministic Make Toolchain Contract**: Standardized developer and automation entrypoints with `make doctor`, `make tools`, `make test-security`, and `make release-ready`.
+- **Operational Scale & Sizing Boundaries**: Documented capacity ceilings for Bare Metal / VPS topologies (Brain: 1–3 High-Spec, 3–5 Low-Spec; Muscle: 50–100 workers) prior to hyperscale K8s orchestration.
+
+### Changed
+- **Ingress & Secrets Decoupling**: Decoupled `ingress_services` catalog from SOPS encryption into tracked `ingress.yml.example` and gitignored `ingress.yml` to prevent merge conflict friction and protect client domain confidentiality without encrypting non-secret routing topology.
+- **Unified Caddyfile SSOT**: Removed `.example.j2` copy requirement in favor of a single tracked `Caddyfile.j2` incorporating global `metrics` directive aligned with upstream.
+- **Upstream Caddy WAF Upgrade**: Pinned `ghcr.io/developmi/caddy-waf:v3.6.2` (Coraza v3.8.1, CRS v4) with cryptographic multi-arch sha256 digest validation.
+
+### Fixed
+- **Preflight Toolchain Compliance**: Replaced legacy `pip` reference in roadmap with `uv tool run` and documented upstream container entrypoint requirement in Twenty CRM compose worker.
+
 ## [7.0.0] - 2026-10-27
 
 ### Added
