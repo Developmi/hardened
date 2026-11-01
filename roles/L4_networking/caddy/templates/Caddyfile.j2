@@ -1,16 +1,16 @@
-# Caddyfile.example - L4_networking/caddy role (Single Source of Truth)
-# Rendered from SOPS (secrets.sops.yml), filtered per-node via target_group ∩ group_names.
+# Caddyfile.j2 - L4_networking/caddy role (Single Source of Truth)
+# Rendered from inventory/group_vars/all/ingress.yml, filtered per-node via target_group ∩ group_names.
 #
-# VARIABLE OWNERSHIP (three layers - NEVER mix):
-#   Layer 1 | SOPS (secrets.sops.yml)      → domains, certs, routes, API keys
-#   Layer 2 | inventory (hosts.ini)       → caddy_node_id, waf_mode_default (per host)
-#   Layer 3 | group_vars (brain|muscle)   → caddy_type, caddy_admin_enabled (group defaults)
+# VARIABLE OWNERSHIP (four layers - NEVER mix):
+#   Layer 1 | SOPS (secrets.sops.yml)      → certs (privkeys), API keys, UI tokens
+#   Layer 2 | Ingress (ingress.yml)        → domains, upstreams, routes, security profiles
+#   Layer 3 | inventory (hosts.ini)       → caddy_node_id, waf_mode_default (per host)
+#   Layer 4 | group_vars (brain|muscle)   → caddy_type, caddy_admin_enabled (group defaults)
 #
 # L4-NETWORKING / EDGE (SDD l4-networking-edge):
 #   Per-client cert path: /etc/caddy/certs/<client>/fullchain.pem
 #   ADR-04 - Hot-reload via docker exec caddy reload (no connection drops)
 #   ADR-05 - Per-service WAF mode via waf_mode (enforcement | detection_only)
-#   SC-28  | All domains and upstreams live exclusively in the encrypted SOPS file.
 #   SC-7   | Per-service security headers in site blocks.
 #   SC-8   | TLS 1.2/1.3 enforced; HTTP→HTTPS redirect; Cloudflare Origin Pull supported.
 #   AU-12  | D6 log pipeline: access + runtime + Coraza audit logs as FILES in
@@ -64,6 +64,9 @@
     email {{ caddy_acme_email | default('') }}
     order coraza_waf first
     order rate_limit before basicauth
+
+    # Enable Caddy HTTP metrics collection (caddy_http_*); served on the admin /metrics endpoint.
+    metrics
 
     # AU-12 (D6) | Runtime/global log → FILE (Caddy internal events, NOT access logs).
     # Contract §7: single writer per stream; promtail scrapes /data/logs/caddy.log.
@@ -209,7 +212,7 @@
 
 # ── Dynamic application routes (client-scoped cert paths) ─────
 #
-# Example ingress_services entry in group_vars/all/secrets.sops.yml (SOPS):
+# Example ingress_services entry in group_vars/all/ingress.yml:
 #
 #   - name: my-app
 #     domain: app.example.com
