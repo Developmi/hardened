@@ -195,26 +195,6 @@ caddy_ui_backup_keep: 10
 # boundary (no public_net container can POST /load).
 caddy_admin_network_name: "caddy-admin-net"
 
-# Ingress routing catalog (single-tenant). Each entry maps a domain
-# to an upstream backend with WAF and cert isolation.
-# Defined in inventory/group_vars/all/ingress.yml (see ingress.yml.example).
-ingress_services: []
-
-# Standard security profiles available to ingress services.
-# Override or extend in inventory/group_vars/all/ingress.yml.
-ingress_security_profiles:
-  public_waf:
-    import_waf: true
-    import_vpn_only: false
-
-  basicauth:
-    import_waf: false
-    import_vpn_only: false
-
-  vpn_only:
-    import_waf: true
-    import_vpn_only: true
-
 # Default WAF mode for services without an explicit waf_mode.
 # enforcement: block violations (return 403)
 # detection_only: log violations but forward request (safe default for rollout)
