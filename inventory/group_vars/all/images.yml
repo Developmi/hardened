@@ -71,12 +71,6 @@ caddy_user_uid: 1337
 caddy_user_gid: 1337
 
 # -----------------------------------------------------------------------------
-# NETWORK CONFIGURATION (Tailscale Zero Trust)
-# -----------------------------------------------------------------------------
-tailscale_mtu: 1280 # MTU for Tailscale
-tailscale_metrics_port: 5252 # Tailscale metrics port
-
-# -----------------------------------------------------------------------------
 # ANSIBLE RUNTIME
 # -----------------------------------------------------------------------------
 ansible_python_interpreter: /usr/bin/python3 # Python interpreter for Ansible

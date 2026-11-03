@@ -3,11 +3,6 @@
 platform_name: "Developmi Hardened"
 platform_version: "v7.0.0-dev"
 
-# Global network defaults
-# Source of truth for the private management overlay used by non-bootstrap playbooks.
-# Set this if you use Headscale or another VPN subnet for remote administration.
-tailscale_subnet: "100.64.0.0/10"
-
 # Shared external Docker network (L3 observability stack, L4 caddy, L6 portainer)
 shared_network_name: "public_net"
 
@@ -28,9 +23,6 @@ observability_cadvisor_port: 18080
 
 # Keep dual-stack filtering enabled by default unless your environment is IPv4-only.
 ufw_enable_ipv6: true
-
-# Control persistent Tailscale webclient exposure (:5252).
-tailscale_enable_webclient: false
 
 # Ingress deployment defaults (safe for all hosts)
 ingress_compose_pull_policy: "missing"
@@ -172,10 +164,6 @@ bootstrap_mode: false
 # do NOT use it as the controller_ip.
 controller_ip: "{{ (ansible_facts['ansible_env']['SSH_CLIENT'] | default('')).split(' ')[0] | default('undefined') }}"
 
-# l2_tailscale_subnet_router enables IP forwarding for nodes that
-# act as Tailscale subnet routers. Default false (no subnet routing).
-l2_tailscale_subnet_router: false
-
 # =============================================================================
 # L4 NETWORKING / EDGE
 # =============================================================================
@@ -237,17 +225,6 @@ backup_repo_base_url: >-
 # Manager: Portainer is optional per ADR-07 (Engine/Manager Decoupling).
 # Set to true to deploy Portainer BE as a stack on top of Engine.
 enable_portainer: false
-
-# ==============================================================================
-# Tailscale Mesh VPN - Installation Variables
-# ==============================================================================
-# Version: v1.102.2 (latest verified)
-# Docs: https://tailscale.com/changelog
-tailscale_version: "1.102.2"
-tailscale_gpg_key_url_debian: "https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg"
-tailscale_gpg_key_url_ubuntu: "https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg"
-tailscale_keyring_path: "/usr/share/keyrings/tailscale-archive-keyring.gpg"
-tailscale_repo_list_path: "/etc/apt/sources.list.d/tailscale.list"
 
 # /proc hidepid=2 reader group (node_exporter, etc.)
 # GID is auto-assigned by Ansible group task, then resolved via getent.
