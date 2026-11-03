@@ -14,6 +14,7 @@ l2_lynis_enabled: false           # Lynis compliance audit - opt-in (NIST AU-12)
 user_hardening_users: []
 
 # Tailscale Serve defaults
+tailscale_acl_serve_enabled: false
 tailscale_serve_enabled: false
 tailscale_serve_target: "8080"
 tailscale_serve_port: "8443"

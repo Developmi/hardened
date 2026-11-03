@@ -1,0 +1,49 @@
+---
+# ==============================================================================
+# TAILSCALE PLATFORM CONFIGURATION (Declarative & Non-Sensitive)
+# ==============================================================================
+# Central SSOT for all non-sensitive Tailscale settings: toolchain, network mesh,
+# telemetry metrics, node attributes, service ports, and ACL policy switches.
+#
+# Privacy & Secrets Contract:
+# All identities, authorized operator emails, private tailnet domains, and OAuth
+# credentials MUST reside in inventory/group_vars/all/secrets.sops.yml.
+# NEVER place emails, tokens, or PII in this file.
+
+# --- Toolchain & System Packages ---
+# Docs: https://tailscale.com/changelog
+tailscale_version: "1.102.2"
+tailscale_gpg_key_url_debian: "https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg"
+tailscale_gpg_key_url_ubuntu: "https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg"
+tailscale_keyring_path: "/usr/share/keyrings/tailscale-archive-keyring.gpg"
+tailscale_repo_list_path: "/etc/apt/sources.list.d/tailscale.list"
+
+# --- Networking & Mesh Defaults ---
+tailscale_subnet: "100.64.0.0/10"
+tailscale_mtu: 1280
+tailscale_metrics_port: 5252
+tailscale_enable_webclient: false
+l2_tailscale_subnet_router: false
+
+# --- Global Tailnet ACL Policy & Capabilities ---
+# The `https` nodeattr is required by the tailnet policy for Tailscale Serve
+# to obtain a MagicDNS certificate. Rendered into the ACL policy file by
+# the L2 tailscale role template (tailscale-acls.json.j2).
+#
+# FORMAT: Mirrors Tailscale policy-file `nodeAttrs` section natively:
+# a list of {target: [...], attr: [...]} objects.
+tailscale_node_attrs:
+  - target: ["tag:muscle"]
+    attr: ["https"]
+
+# Global ACL rule: allow operator sources to reach caddy-waf-ui serve on muscle nodes.
+# Controls whether the rule tag:muscle:<port> is rendered into the tailnet ACL policy.
+tailscale_acl_serve_enabled: true
+
+# --- Tailscale Serve Host Proxy Topology ---
+# Automatically enabled on nodes in the muscle group (where caddy-waf-ui runs)
+tailscale_serve_enabled: "{{ 'muscle' in group_names }}"
+# Local target to proxy: the loopback-only publish of caddy-waf-ui (127.0.0.1:8080)
+tailscale_serve_target: "8080"
+# Tailnet-facing HTTPS port. NOT 443: Caddy data plane binds 0.0.0.0:443 on host
+tailscale_serve_port: "8443"

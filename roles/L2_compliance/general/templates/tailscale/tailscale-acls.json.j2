@@ -40,10 +40,11 @@
     })
 %}
 {# Tailscale Serve: operator sources reach the serve listener on muscle
-   (caddy-waf-ui control plane). Rendered only when serve is enabled; the
-   host firewall (ufw/nftables) also opens this port on tailscale0. #}
-{% if tailscale_serve_enabled | default(false) %}
-{%   set acl_serve_sources = ((tailscale_acl_serve_sources | default(acl_operator_sources)) + (tailscale_acl_serve_sources_extra | default([]))) | unique %}
+   (caddy-waf-ui control plane). Rendered only when global ACL serve policy
+   is enabled; the host firewall (ufw/nftables) opens this port on tailscale0
+   locally when tailscale_serve_enabled is true on the node. #}
+{% if (tailscale_acl_serve_enabled | default(tailscale_serve_enabled | default(false))) | bool %}
+{%   set acl_serve_sources = ((tailscale_acl_serve_sources | default(acl_admin_ui_sources)) + (tailscale_acl_serve_sources_extra | default([]))) | unique %}
 {%   if acl_serve_sources | length > 0 %}
 {%     set _ = acl_rules.append({
         'action': 'accept',
