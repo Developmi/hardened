@@ -659,23 +659,32 @@ ssh -L 8080:127.0.0.1:8080 user@<host>
 
 **Access via Tailscale Serve:**
 
-The UI can also be exposed to the tailnet via `tailscale serve` (HTTPS with a MagicDNS certificate, tailnet-only, never Funnel). Tailnet ACLs still apply to the serve listener: when `tailscale_serve_enabled` is true, the L2 ACL template renders an accept rule (operator sources → `tag:muscle:<serve_port>`) and the host firewall (ufw/nftables) opens `<serve_port>` on `tailscale0` — both automatically.
+The UI can also be exposed to the tailnet via `tailscale serve` (HTTPS with a MagicDNS certificate, tailnet-only, never Funnel). Tailnet ACLs still apply to the serve listener: when `tailscale_acl_serve_enabled` is true in global tailnet policy (`inventory/group_vars/all/tailscale.yml`), the L2 ACL template renders an accept rule (operator sources → `tag:muscle:<serve_port>`). When `tailscale_serve_enabled` is true on the node, the host firewall (ufw/nftables) opens `<serve_port>` on `tailscale0` and activates Serve — both automatically.
 
-**Prerequisites (order matters):**
+**Prerequisites (2-center canonical partition: Declarative Public vs SOPS Encrypted):**
 
-1. Set `tailscale_node_attrs` in the **node's** group_vars/host_vars (e.g. `inventory/group_vars/muscle/tailscale.yml`) — never in role defaults. The L2 tailscale role renders it into the ACL policy file (`tailscale-acls.json.j2`). **Format is the native policy-file structure — a list of `{target: [...], attr: [...]}` objects** (a plain string list like `["https"]` is invalid and the ACL API rejects it with HTTP 400):
+1. Declare global tailnet capabilities and ports in `inventory/group_vars/all/tailscale.yml` (declarative, evaluated controller-side during L2 hardening):
    ```yaml
    tailscale_node_attrs:
      - target: ["tag:muscle"]
        attr: ["https"]
+   tailscale_acl_serve_enabled: true
+   tailscale_serve_port: "8443"
+   tailscale_serve_target: "8080"
    ```
-2. Deploy the L2 tailscale role for that node once so the nodeattr lands in the policy (e.g. `make deploy-hardening ANSIBLE_LIMIT=<host>`).
-3. HTTPS must be enabled in the tailnet. Tailscale MFA recommended on the tailnet account.
-4. Tailnet ACLs apply to the serve listener. The UI session cookie is `Secure`, so plain-HTTP serve is not supported — HTTPS is mandatory.
+2. Declare authorized operator identities in `inventory/group_vars/all/secrets.sops.yml` (encrypted, protects operator PII from public repo scraping):
+   ```yaml
+   tailscale_acl_serve_sources:
+     - "admin@example.invalid"
+   ```
+   _(Note: If `tailscale_acl_serve_sources` is omitted, it falls back automatically to `tailscale_acl_admin_ui_sources`)._
+3. Deploy L2 hardening once so the nodeattr and ACL rule land in the policy (e.g. `make deploy-hardening`).
+4. HTTPS must be enabled in the tailnet. Tailscale MFA recommended on the tailnet account.
+5. Tailnet ACLs apply to the serve listener. The UI session cookie is `Secure`, so plain-HTTP serve is not supported — HTTPS is mandatory.
 
-**Enable per node:**
+**Activation:**
 
-- Set `tailscale_serve_enabled: true` (optionally override `tailscale_serve_port`) in the node's vars, then re-run the L2 deploy for that host. Only enable AFTER the `https` nodeattr is in the policy (prereq step 2) — otherwise `tailscale serve --https` cannot obtain a certificate.
+Tailscale Serve activates automatically on nodes belonging to the `muscle` inventory group (where `caddy-waf-ui` runs) via `tailscale_serve_enabled: "{{ 'muscle' in group_names }}"` declared in `inventory/group_vars/all/tailscale.yml`. No per-node file or manual override is required. Deploy L2 hardening once the tailnet ACL policy is updated.
 
 **Access URL pattern:**
 
