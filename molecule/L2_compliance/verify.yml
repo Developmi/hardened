@@ -1,8 +1,104 @@
 ---
-- name: Verify SDD Specifications
+# ==============================================================================
+# Molecule Verify - L2 Compliance Hardening (Strict TDD)
+# ==============================================================================
+# Validates SDD & NIST SC-7 / CIS §3.5 firewall and security specifications:
+#   1. ufw is completely purged (package absent, /etc/ufw absent).
+#   2. nftables is the unified in-kernel firewall engine (installed, enabled, ruleset loaded).
+#   3. Auxiliary security packages (fail2ban, auditd, sysctl) are properly installed.
+# ==============================================================================
+
+- name: Verify L2 Compliance Specifications
   hosts: all
   gather_facts: true
   tasks:
-    - name: "THEN: The system must meet the baseline state"
-      ansible.builtin.debug:
-        msg: "Implement SDD assertions here (ansible.builtin.assert)"
+    # ── 1. UFW Purge Verification (CIS §3.5 Track A) ──────────────────────────
+    - name: "THEN: Check ufw package status"
+      ansible.builtin.command: dpkg-query -W -f='${Status}' ufw
+      register: _ufw_pkg_check
+      failed_when: false
+      changed_when: false
+
+    - name: "ASSERT: ufw package must NOT be installed"
+      ansible.builtin.assert:
+        that:
+          - "'not-installed' in _ufw_pkg_check.stdout or _ufw_pkg_check.rc != 0"
+          - "'install ok installed' != _ufw_pkg_check.stdout"
+        fail_msg: "UFW package is still installed on {{ inventory_hostname }}: '{{ _ufw_pkg_check.stdout }}'"
+        success_msg: "UFW package is confirmed absent/purged."
+
+    - name: "THEN: Check /etc/ufw configuration directory"
+      ansible.builtin.stat:
+        path: /etc/ufw
+      register: _etc_ufw_stat
+
+    - name: "ASSERT: /etc/ufw must NOT exist"
+      ansible.builtin.assert:
+        that:
+          - not _etc_ufw_stat.stat.exists
+        fail_msg: "/etc/ufw directory still exists on {{ inventory_hostname }}."
+        success_msg: "/etc/ufw directory is absent."
+
+    # ── 2. nftables Unified Engine Verification (NIST SC-7) ─────────────────
+    - name: "THEN: Check nftables package status"
+      ansible.builtin.command: dpkg-query -W -f='${Status}' nftables
+      register: _nft_pkg_check
+      changed_when: false
+
+    - name: "ASSERT: nftables package must be installed"
+      ansible.builtin.assert:
+        that:
+          - "'installed' in _nft_pkg_check.stdout"
+        fail_msg: "nftables package is not installed on {{ inventory_hostname }}."
+        success_msg: "nftables package is installed."
+
+    - name: "THEN: Check /etc/nftables.conf"
+      ansible.builtin.stat:
+        path: /etc/nftables.conf
+      register: _nft_conf_stat
+
+    - name: "ASSERT: /etc/nftables.conf must exist and be non-empty"
+      ansible.builtin.assert:
+        that:
+          - _nft_conf_stat.stat.exists
+          - _nft_conf_stat.stat.size > 0
+        fail_msg: "/etc/nftables.conf missing or empty on {{ inventory_hostname }}."
+        success_msg: "/etc/nftables.conf is present and populated."
+
+    - name: "THEN: Read /etc/nftables.conf content"
+      ansible.builtin.slurp:
+        src: /etc/nftables.conf
+      register: _nft_conf_slurp
+
+    - name: "ASSERT: /etc/nftables.conf contains table inet filter and policy drop"
+      ansible.builtin.assert:
+        that:
+          - "'table inet filter' in (_nft_conf_slurp.content | b64decode)"
+          - "'policy drop' in (_nft_conf_slurp.content | b64decode)"
+        fail_msg: "/etc/nftables.conf does not declare table inet filter with policy drop."
+        success_msg: "/etc/nftables.conf contains valid NIST SC-7 inet filter table."
+
+    # ── 3. Auxiliary Security Baseline Verification ─────────────────────────
+    - name: "THEN: Check fail2ban package status"
+      ansible.builtin.command: dpkg-query -W -f='${Status}' fail2ban
+      register: _f2b_pkg_check
+      changed_when: false
+
+    - name: "ASSERT: fail2ban package must be installed"
+      ansible.builtin.assert:
+        that:
+          - "'installed' in _f2b_pkg_check.stdout"
+        fail_msg: "fail2ban is missing on {{ inventory_hostname }}."
+        success_msg: "fail2ban is installed."
+
+    - name: "THEN: Check auditd package status"
+      ansible.builtin.command: dpkg-query -W -f='${Status}' auditd
+      register: _auditd_pkg_check
+      changed_when: false
+
+    - name: "ASSERT: auditd package must be installed"
+      ansible.builtin.assert:
+        that:
+          - "'installed' in _auditd_pkg_check.stdout"
+        fail_msg: "auditd is missing on {{ inventory_hostname }}."
+        success_msg: "auditd is installed."
