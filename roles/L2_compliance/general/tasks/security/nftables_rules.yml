@@ -131,12 +131,6 @@
 
               # Deny Caddy admin + Prometheus API on Tailscale (defense-in-depth)
               iifname tailscale0 tcp dport { 2019, 2020 } reject
-
-              {% if hardening_profile == 'workstation' %}
-              # Workstation exceptions
-              udp dport 68 accept  # DHCP client
-              udp dport 5353 accept  # mDNS
-              {% endif %}
           }
 
           chain forward {

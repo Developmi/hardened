@@ -4,7 +4,7 @@ type: operations
 owner: maintainers
 audience: operator
 version: v6.0.0
-last-reviewed: 2026-07-16
+last-reviewed: 2026-11-04
 status: active
 project: developmi-hardened
 repo: github.com/Developmi/hardened
@@ -12,7 +12,7 @@ repo: github.com/Developmi/hardened
 
 # How to Assign and Manage Host Classes
 
-This guide walks you through assigning hosts to classes (`brain`, `muscle`, `local`), migrating hosts between classes, and verifying the result. Host classes control which Ansible roles, hardening profiles, and platform services apply to a node. Assigning the wrong class means the wrong profile is deployed.
+This guide walks you through assigning hosts to classes (`brain`, `muscle`), migrating hosts between classes, and verifying the result. Host classes control which Ansible roles, hardening profiles, and platform services apply to a node. Assigning the wrong class means the wrong profile is deployed.
 
 _(Source: ARCHITECTURE.md §7)_
 
@@ -20,13 +20,13 @@ _(Source: ARCHITECTURE.md §7)_
 
 You need to understand what each class does before assigning one.
 
-**Capability summary** - `brain` nodes are management (Portainer, Grafana, backups); `muscle` nodes run application workloads; `local` nodes are operator workstations with minimal platform footprint. For the full 10-row capability matrix (backups, observability, CrowdSec, Tailscale auth, UFW policy, fail2ban bantime, etc.), see [ARCHITECTURE.md §7 - Capability Matrix](../architecture/ARCHITECTURE.md#7-host-classes-brain-muscle-local).
+**Capability summary** - `brain` nodes are management (Portainer, Grafana, backups, ingress control); `muscle` nodes run application workloads. For the full capability matrix (backups, observability, CrowdSec, Tailscale auth, nftables policy, fail2ban bantime, etc.), see [ARCHITECTURE.md §7 - Capability Matrix](../architecture/ARCHITECTURE.md#7-host-classes-brain-muscle).
 
-**Role summary** - `brain` and `muscle` get the full L1-L6 role stack (with brain-only management roles), `local` gets L1-L2 plus Docker engine only. For the complete per-class allowed-roles table, see [ARCHITECTURE.md §7 - Allowed Roles per Class](../architecture/ARCHITECTURE.md#7-host-classes-brain-muscle-local).
+**Role summary** - `brain` and `muscle` get the full L1-L6 role stack (with brain-only management roles). For the complete per-class allowed-roles table, see [ARCHITECTURE.md §7 - Allowed Roles per Class](../architecture/ARCHITECTURE.md#7-host-classes-brain-muscle).
 
-**Hardening profile** - the `hardening_profile` dispatcher (in [HARDENING-STATUS.md](../security/HARDENING-STATUS.md#hardening-profile-dispatcher)) routes `brain`/`muscle` → `server`, `local` → `workstation`.
+**Hardening profile** - the `hardening_profile` dispatcher routes `brain` and `muscle` to `server`.
 
-> **Legacy variables (documented, not used):** `node_role` (still present in `inventory/hosts.ini.example`), `server_role` and `server_type` (in `inventory/group_vars/{brain,muscle,local}/main.yml`) are legacy classifiers with no code usage. The real classifiers are `host_class` (inventory group membership) + `hardening_profile`. Do not build new logic on the legacy vars; `server_type` is only consumed as a cosmetic display string in `playbooks/ops/local-devices.yml`. They are kept in the repo for reference only and may be removed in a future major release.
+> **Note on Workstation Devices**: Operator and developer laptops/workstations are client endpoints connecting to the cluster over Tailscale; they are not managed through Ansible host classes. See [DEVELOPER_WORKSTATION_GUIDE.md](../security/DEVELOPER_WORKSTATION_GUIDE.md).
 
 **Brain vs muscle roles** - both run Docker, but with different purposes:
 
@@ -39,8 +39,8 @@ The suite does NOT deploy applications - it prepares the hardened foundation. Ap
 
 ### Prerequisites
 
-- Ansible inventory file (`hosts.yml` or equivalent) is writable
-- `inventory/group_vars/` directory structure exists: `brain/`, `muscle/`, `local/`
+- Ansible inventory file (`inventory/hosts.ini` or equivalent) is writable
+- `inventory/group_vars/` directory structure exists: `brain/`, `muscle/`
 - SOPS age private key available at `~/.config/sops/age/keys.txt` to decrypt `secrets.sops.yml` (the Tailscale trio in `secrets.yml` is the only vaulted exception until gate D4, OPERATIONS_RUNBOOK §7.4)
 - Bootstrap identity follows the inventory: SSH as `root` on classic VPS/lab hosts; on cloud images (OCI/AWS/GCP) SSH as the cloud image user (non-root, NOPASSWD sudo). `ansible_become` is derived from `ansible_user`. Declare `ansible_user` per host and `ansible_ssh_private_key_file` in `all:vars`.
 
@@ -55,53 +55,40 @@ hardening_profile: server
 EOF
 ```
 
-Repeat for `muscle` or `local`, setting `hardening_profile: server` or `hardening_profile: workstation` respectively.
+Repeat for `muscle`, setting `hardening_profile: server`.
 
 ### Step 2 - Tag the host in inventory
 
 Add the host to the matching Ansible group in your inventory file:
 
-```yaml
-# inventory/hosts.yml
-all:
-  children:
-    brain:
-      hosts:
-        mgmt-node-01:
-          ansible_host: 10.0.0.10
-    muscle:
-      hosts:
-        worker-01:
-          ansible_host: 10.0.0.20
-        worker-02:
-          ansible_host: 10.0.0.21
-    local:
-      hosts:
-        dev-laptop:
-          ansible_host: 192.168.1.50
+```ini
+# inventory/hosts.ini
+[brain]
+brain-1 ansible_host=100.125.56.109 ansible_user=automation public_ip=178.104.18.57 node_role=management caddy_node_id=brain-1
+
+[muscle]
+muscle-1 ansible_host=100.66.224.76 ansible_user=automation public_ip=150.136.240.35 node_role=worker caddy_node_id=muscle-1
 ```
 
 ### Step 3 - Verify group_vars are loaded
 
 ```bash
 # Confirm the host picks up the right hardening_profile
-ansible mgmt-node-01 -m debug -a "var=hardening_profile"
+uv run ansible mgmt-node-01 -m debug -a "var=hardening_profile"
 
 # List all facts for the host to verify group membership
-ansible mgmt-node-01 -m setup | grep ansible_playbook_dir
+uv run ansible mgmt-node-01 -m setup | grep ansible_playbook_dir
 ```
 
 ### Step 4 - Dry-run with the new class
 
 ```bash
-uv run ansible-playbook -i inventory/hosts.yml site.yml --limit mgmt-node-01 --check --diff
+uv run ansible-playbook -i inventory/hosts.ini playbooks/l2/hardening.yml --limit mgmt-node-01 --check --diff
 ```
-
-If the dry-run shows unexpected changes (e.g., a `local` host picking up server-grade hardening), recheck the inventory group membership and `group_vars` file path.
 
 ## Class Migration Procedure
 
-Migrating a host between classes (e.g., promoting a `local` node to `muscle`, or downgrading a `brain` → `muscle`) requires careful reconfiguration - the hardening profile and allowed roles change.
+Migrating a host between classes (`brain` ↔ `muscle`) requires careful reconfiguration.
 
 ### brain → muscle migration
 
@@ -115,25 +102,20 @@ Migrating a host between classes (e.g., promoting a `local` node to `muscle`, or
      --flat
    ```
 
-2. **Reassign group in inventory** - move the host from the `brain` group to the `muscle` group in `inventory/hosts.yml`. If the host is the _only_ brain, you must first designate another node as brain or accept that management services (Portainer, Grafana) will go down.
+2. **Reassign group in inventory** - move the host from the `brain` group to the `muscle` group in `inventory/hosts.ini`. If the host is the _only_ brain, you must first designate another node as brain or accept that management services (Portainer, Grafana) will go down.
 
-3. **Review role differences** - `muscle` excludes management-only roles. Verify `site.yml` or your playbook does not assign brain-only roles (e.g., `portainer` as primary server) to this host.
+3. **Review role differences** - `muscle` excludes management-only roles. Verify your playbooks do not assign brain-only roles (e.g., `portainer` as primary server) to this host.
 
 4. **Dry-run the migration**
 
    ```bash
-   uv run ansible-playbook -i inventory/hosts.yml site.yml \
+   uv run ansible-playbook -i inventory/hosts.ini playbooks/l2/hardening.yml \
      --limit <hostname> --check --diff
    ```
 
-   Watch for:
-   - Firewall rule deltas (UFW policy may not change between brain/muscle, but verify)
-   - Role removals that would stop services (Portainer server, observability dashboards)
-   - Backup target reassignment
-
 5. **Apply**
    ```bash
-   uv run ansible-playbook -i inventory/hosts.yml site.yml --limit <hostname>
+   uv run ansible-playbook -i inventory/hosts.ini playbooks/l2/hardening.yml --limit <hostname>
    ```
 
 ### muscle → brain migration
@@ -144,15 +126,6 @@ Same steps in reverse, plus:
 - Verify observability dashboards are reachable after migration
 - If HA, add the new brain to the HA configuration
 
-### local → muscle migration
-
-**This is a significant class change** - the host goes from workstation-grade hardening to server-grade. Steps:
-
-1. Apply muscle `group_vars` per the assignment procedure above
-2. Dry-run first - expect SSH config changes, UFW policy tightening, and new service installations (CrowdSec, observability agents, backup timers)
-3. Ensure Tailscale auth switches from manual to automated (provision `--authkey`)
-4. Apply with `--limit` to avoid unintended changes on other hosts
-
 ## Verification Checklist
 
 Run these commands after assigning a class or after a migration to confirm the host is in the expected state.
@@ -161,54 +134,35 @@ Run these commands after assigning a class or after a migration to confirm the h
 
 ```bash
 # 1. Confirm hardening_profile is correct
-ansible <hostname> -m debug -a "var=hardening_profile"
-# Expected: "server" for brain/muscle, "workstation" for local
+uv run ansible <hostname> -m debug -a "var=hardening_profile"
+# Expected: "server" for brain/muscle
 
 # 2. Check active roles (via ansible-playbook tag report)
-uv run ansible-playbook -i inventory/hosts.yml site.yml \
+uv run ansible-playbook -i inventory/hosts.ini playbooks/l2/hardening.yml \
   --limit <hostname> --list-tags
 
 # 3. Verify group membership
-ansible <hostname> -m debug -a "var=group_names"
-# Expected: ["brain"], ["muscle"], or ["local"]
+uv run ansible <hostname> -m debug -a "var=group_names"
+# Expected: ["brain"] or ["muscle"]
 
-# 4. Check UFW status (brain/muscle)
-ansible <hostname> -m shell -a "ufw status verbose" --become
+# 4. Check nftables firewall status
+uv run ansible <hostname> -m shell -a "systemctl is-active nftables && nft list ruleset | grep 'table inet filter'" --become
 
-# 5. Check fail2ban status (all classes)
-ansible <hostname> -m shell -a "fail2ban-client status" --become
+# 5. Check fail2ban status
+uv run ansible <hostname> -m shell -a "fail2ban-client status" --become
 
-# 6. Check CrowdSec (brain/muscle only)
-ansible <hostname> -m shell -a "cscli metrics" --become
+# 6. Check CrowdSec
+uv run ansible <hostname> -m shell -a "cscli metrics" --become
 
 # 7. Check Tailscale connectivity
-ansible <hostname> -m shell -a "tailscale status" --become
-
-# 8. Full system facts snapshot (compare before/after migration)
-ansible <hostname> -m setup > facts_$(date +%Y%m%d).json
-```
-
-### Sample verification output
-
-```bash
-$ ansible mgmt-node-01 -m debug -a "var=hardening_profile"
-mgmt-node-01 | SUCCESS => {
-    "hardening_profile": "server"
-}
-
-$ ansible mgmt-node-01 -m debug -a "var=group_names"
-mgmt-node-01 | SUCCESS => {
-    "group_names": [
-        "brain"
-    ]
-}
+uv run ansible <hostname> -m shell -a "tailscale status" --become
 ```
 
 ## Troubleshooting
 
 ### Wrong hardening profile applied
 
-**Symptom:** `hardening_profile` returns `workstation` on a server host (or vice versa).
+**Symptom:** `hardening_profile` returns unexpected value on a server host.
 
 **Causes:**
 
@@ -219,38 +173,20 @@ mgmt-node-01 | SUCCESS => {
 
 ```bash
 # Check which vars files are loaded
-ansible <hostname> -m debug -a "var=vars"
+uv run ansible <hostname> -m debug -a "var=vars"
 # Verify the group file exists
-ls -la inventory/group_vars/{brain,muscle,local}/main.yml
+ls -la inventory/group_vars/{brain,muscle}/main.yml
 ```
 
 ### Missing group_vars file
 
 **Symptom:** `hardening_profile` is undefined, playbook fails with `'hardening_profile' is undefined`.
 
-**Fix:** Create the file per the assignment procedure above, or add a default in `inventory/group_vars/all/main.yml` (with a loud comment that it must be overridden):
+**Fix:** Create the file per the assignment procedure above, or rely on global default in `inventory/group_vars/all/main.yml`:
 
 ```yaml
 # inventory/group_vars/all/main.yml
-# ponytail: fallback default; every host SHOULD set this in its class group_vars
-hardening_profile: "UNDEFINED - set per host class!"
-```
-
-### Role mismatch
-
-**Symptom:** A `local` host runs CrowdSec or backup roles it should not have.
-
-**Cause:** `site.yml` or playbook does not gate roles on group membership.
-
-**Fix:** Add `when: "'local' not in group_names"` conditionals in the playbook, or restructure plays so roles are applied per group:
-
-```yaml
-- hosts: brain:muscle
-  roles:
-    - crowdsec
-    - observability
-    - backup
-    - backup-timers
+hardening_profile: server
 ```
 
 ### Role removed but service still running
@@ -260,13 +196,13 @@ hardening_profile: "UNDEFINED - set per host class!"
 **Fix:** Ansible roles are additive by default - they do not automatically stop services when a role is removed from a host. Manually stop and disable:
 
 ```bash
-ansible <hostname> -m systemd -a "name=portainer state=stopped enabled=no" --become
+uv run ansible <hostname> -m systemd -a "name=portainer state=stopped enabled=no" --become
 ```
 
 ## Cross-References
 
-- [ARCHITECTURE.md §7 - Host Classes and Capability Profiles](../architecture/ARCHITECTURE.md#7-host-classes-brain-muscle-local) - SSOT for capability matrix and allowed roles
+- [ARCHITECTURE.md §7 - Host Classes and Capability Profiles](../architecture/ARCHITECTURE.md#7-host-classes-brain-muscle) - SSOT for capability matrix and allowed roles
 - [GLOSSARY.md - Host Classes](../GLOSSARY.md#host-classes) - Platform terminology
-- [HARDENING-STATUS.md - Hardening Profile Dispatcher](../security/HARDENING-STATUS.md#hardening-profile-dispatcher) - Profile dispatch logic
-- [LAYER_BOUNDARIES.md](../architecture/LAYER_BOUNDARIES.md) - L3 deployment scoping
+- [DEVELOPER_WORKSTATION_GUIDE.md](../security/DEVELOPER_WORKSTATION_GUIDE.md) - Workstation security baseline
+- [LAYER_BOUNDARIES.md](../architecture/LAYER_BOUNDARIES.md) - Layer deployment scoping
 - [OPERATIONS_RUNBOOK.md](OPERATIONS_RUNBOOK.md) - Boot sequence per layer

@@ -144,8 +144,7 @@ playbooks/
 └── ops/
     ├── bootstrap.yml                       # Initial node setup and toolchain install
     ├── nuke.yml                            # Deterministic teardown (confirmation-gated)
-    ├── validate.yml                        # Syntax and pre-flight validation
-    └── local-devices.yml                   # Workstation/laptop hardening over Tailscale
+    └── validate.yml                        # Syntax and pre-flight validation
 ```
 
 ### Playbook Tags
@@ -286,7 +285,6 @@ The Makefile is the primary operational interface. All targets run through the `
 | `deploy-backup-stack`               | Deploy Restic stack backup (brain only)                           | `playbooks/l6/backup-stack.yml`                                   |
 | `deploy-backup-engine`              | Deploy the unified backup engine (all backup hosts)               | `playbooks/l6/backup-engine.yml`                                  |
 | `deploy-backups`                    | All backup layers (umbrella: stack → engine)                      | umbrella target                                                   |
-| `deploy-local`                      | Workstation hardening                                             | `playbooks/ops/local-devices.yml`                                 |
 | `run`                               | Generic runner (`PLAYBOOK=`, `TAGS=`, `SKIP_TAGS=`, `CHECK=1`)    | variable                                                          |
 | `nuke`                              | Destructive teardown (requires CONFIRM=)                          | `playbooks/ops/nuke.yml`                                          |
 | `deploy-platform`                   | Complete platform (hardening→engine→monitoring→portainer→backups) | meta-target (L4 edge excluded)                                    |

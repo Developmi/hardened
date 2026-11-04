@@ -31,13 +31,6 @@ brain-1 ansible_host=YOUR_BRAIN_PUBLIC_IP public_ip=YOUR_BRAIN_PUBLIC_IP node_ro
 muscle-1 ansible_host=YOUR_MUSCLE_PUBLIC_IP public_ip=YOUR_MUSCLE_PUBLIC_IP node_role=worker caddy_node_id=muscle-1
 # muscle-2 ansible_host=ANOTHER_PUBLIC_IP public_ip=ANOTHER_PUBLIC_IP node_role=worker caddy_node_id=muscle-2
 
-# ===== LOCAL DEVICES =====
-# Personal machines connected through Tailscale.
-# Only hardening + Docker are installed (no application stack).
-# ansible_user is REQUIRED per host entry (see identity convention above).
-[local]
-# local-pc ansible_host=100.x.x.x
-
 # ===== FUNCTIONAL GROUPS =====
 [observability:children]
 brain

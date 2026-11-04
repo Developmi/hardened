@@ -83,18 +83,12 @@ systemd_nproc_hard: 65536
 # {brain,muscle,local} > all > role defaults.
 # Every tunable below has a default - override at the appropriate layer.
 
-# ─── OS Detection & Normalization ────────────────────────────────────────────
-# _os_family normalizes Pop OS → Ubuntu before any L2+ roles execute.
-# Used by downstream dispatchers (firewall, packages, etc.).
-_os_family: "{{ 'Ubuntu' if ansible_facts['distribution'] in ['Pop', 'Pop!_OS'] else ansible_facts['os_family'] }}"
-
 # os_firewall_backend (NIST SC-7 / CIS §3.5 Track A):
 # Unified in-kernel nftables across all Linux distributions (Debian, Ubuntu).
 os_firewall_backend: "nftables"
 
 # ─── Hardening Profile Dispatcher ────────────────────────────────────────────
-# server:      strict firewalls, short fail2ban bans, CrowdSec enforcement
-# workstation: lenient firewalls, longer fail2ban bans, CrowdSec detection_only
+# Server-grade hardening: strict firewalls, fail2ban bans, CrowdSec enforcement
 hardening_profile: server
 
 # ─── Network & Access ────────────────────────────────────────────────────────

@@ -20,14 +20,13 @@ what requires manual intervention, and what is not applicable per host class.
 ## Hardening Profile Dispatcher
 
 The `hardening_profile` variable (from [ARCHITECTURE.md §3](../architecture/ARCHITECTURE.md#3-role-composition-and-variable-hierarchy))
-dispatches between two hardening levels:
+sets the server-grade hardening baseline:
 
-| Profile         | Value         | Host Classes  | Behavior                                                                                                                                                    |
-| --------------- | ------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Server**      | `server`      | brain, muscle | Full hardening: server-grade firewall (`ufw deny`/`nftables deny`), fail2ban 1h bantime, CrowdSec enforcement, observability stack, backups enabled         |
-| **Workstation** | `workstation` | local         | Tailored hardening: UFW deny (Zero Trust base), fail2ban 10m bantime, CrowdSec skipped (false positives from network changes), no observability, no backups |
+| Profile    | Value    | Host Classes  | Behavior                                                                                                                                                |
+| ---------- | -------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Server** | `server` | brain, muscle | Full hardening: in-kernel nftables firewall (`policy drop`), fail2ban 1h bantime, CrowdSec enforcement, observability stack, and Restic backups enabled |
 
-The dispatcher is set per host class in `inventory/group_vars/{brain,muscle,local}/main.yml`.
+The dispatcher is set per host class in `inventory/group_vars/{brain,muscle}/main.yml`. Developer and operator workstation security follows a Zero Trust baseline outside Ansible management (see [DEVELOPER_WORKSTATION_GUIDE.md](DEVELOPER_WORKSTATION_GUIDE.md)).
 
 ### Tag Conventions Used in Matrix
 
@@ -90,17 +89,6 @@ Status values:
 | L5    | App Profiles         | N/A       | -                                                                                                                                                             | Reference profiles at `apps/` (user-managed)                                                                      |
 | L6    | Runtime              | Automated | `playbooks/l6/engine.yml`, `playbooks/l6/portainer.yml`, `playbooks/l6/backup-stack.yml`, `playbooks/l6/backup-appdata.yml`, `playbooks/l6/backup-timers.yml` | `l6-runtime`, Docker Engine, Portainer (optional, Edge Agent), stack backup, app data backup, Docker bench        |
 
-### Local
-
-| Layer | Hardening            | Status    | Playbook                                                    | Tags / Notes                                                                                                                |
-| ----- | -------------------- | --------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| L1    | OS baseline          | Automated | `playbooks/l1/baseline.yml`                                 | `l1-os-baseline`, CIS Level 1, kernel tuning                                                                                |
-| L2    | Compliance hardening | Automated | `playbooks/l2/hardening.yml`, `playbooks/l2/compliance.yml` | `l2-compliance`, `hardening_profile: workstation`, `nist,sc-7`, SSH, firewall, fail2ban (10m), kernel. CrowdSec **skipped** |
-| L3    | Observability        | N/A       | -                                                           | No observability on workstation class                                                                                       |
-| L4    | Networking / Edge    | N/A       | -                                                           | No ingress role on local                                                                                                    |
-| L5    | App Profiles         | N/A       | -                                                           | No app profiles on workstation class                                                                                        |
-| L6    | Runtime              | Automated | `playbooks/l6/engine.yml`                                   | `l6-runtime`, Docker Engine only (no Portainer, no backup)                                                                  |
-
 ---
 
 ## Automation Level Summary
@@ -109,7 +97,6 @@ Status values:
 | ------ | --------- | --------- | --------- | --------- | --- | --------- |
 | Brain  | Automated | Automated | Automated | N/A       | N/A | Automated |
 | Muscle | Automated | Automated | Automated | Automated | N/A | Automated |
-| Local  | Automated | Automated | N/A       | N/A       | N/A | Automated |
 
 ---
 
@@ -119,14 +106,14 @@ NIST 800-53 controls are tagged at the Ansible task level. Evidence is auto-coll
 to `/srv/evidence/nist/<control>/`. See [NIST_800_53.md](../compliance/NIST/NIST_800_53.md)
 for full control-to-task mapping.
 
-| Control | Tag          | Layer | Applies To           | Enforcement                               |
-| ------- | ------------ | ----- | -------------------- | ----------------------------------------- |
-| AC-2    | `nist,ac-2`  | L2    | brain, muscle        | Automated (account management)            |
-| SC-7    | `nist,sc-7`  | L2    | brain, muscle, local | Automated (boundary protection)           |
-| SI-4    | `nist,si-4`  | L2    | brain, muscle        | Automated (monitoring)                    |
-| AU-12   | `nist,au-12` | L2    | brain, muscle        | Automated (audit generation)              |
-| CM-7    | `nist,cm-7`  | L2    | brain, muscle        | Automated (least functionality)           |
-| SC-28   | `nist,sc-28` | L2    | brain, muscle        | Audit-only (disk encryption verification) |
+| Control | Tag          | Layer | Applies To    | Enforcement                               |
+| ------- | ------------ | ----- | ------------- | ----------------------------------------- |
+| AC-2    | `nist,ac-2`  | L2    | brain, muscle | Automated (account management)            |
+| SC-7    | `nist,sc-7`  | L2    | brain, muscle | Automated (boundary protection)           |
+| SI-4    | `nist,si-4`  | L2    | brain, muscle | Automated (monitoring)                    |
+| AU-12   | `nist,au-12` | L2    | brain, muscle | Automated (audit generation)              |
+| CM-7    | `nist,cm-7`  | L2    | brain, muscle | Automated (least functionality)           |
+| SC-28   | `nist,sc-28` | L2    | brain, muscle | Audit-only (disk encryption verification) |
 
 ---
 
