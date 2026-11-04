@@ -143,95 +143,46 @@
     # LOCKDOWN - apply public SSH DROP (always; the bootstrap ACCEPT exception
     # rendered during a first deploy is removed below)
     # ========================================================================
-
-    - name: "L2 | LOCKDOWN - Apply UFW SSH DROP rules"
-      ansible.builtin.include_tasks: "{{ playbook_dir }}/../../roles/L2_compliance/general/tasks/security/ufw_rules.yml"
-      when: os_firewall_backend == 'ufw'
-      tags: [lockdown, firewall]
+    # FIREWALL LOCKDOWN (nftables - NIST SC-7 / CIS §3.5 Track A)
+    # ========================================================================
 
     - name: "L2 | LOCKDOWN - Apply nftables SSH DROP rules"
       ansible.builtin.include_tasks: "{{ playbook_dir }}/../../roles/L2_compliance/general/tasks/security/nftables_rules.yml"
-      when: os_firewall_backend == 'nftables'
       tags: [lockdown, firewall]
 
-    - name: "L2 | LOCKDOWN - Remove bootstrap ACCEPT rule (ufw)"
-      ansible.builtin.blockinfile:
-        path: /etc/ufw/before.rules
-        marker: "# {mark} ANSIBLE MANAGED - SSH bootstrap gate"
-        block: ""
-        state: absent
-      when: os_firewall_backend == 'ufw'
-      # (notify removed - reloaded explicitly below)
-      tags: [lockdown, firewall]
-
-    - name: "L2 | LOCKDOWN - Reload UFW after bootstrap rule removal"
-      ansible.builtin.command: ufw reload
-      changed_when: true
-      when: os_firewall_backend == 'ufw'
-      tags: [lockdown, firewall]
-
-    # nftables counterpart of the UFW bootstrap rule removal. During a first
-    # deploy (bootstrap_mode=true via -e) the nftables_rules include above
-    # re-renders /etc/nftables.conf WITH the bootstrap ACCEPT line
-    # `ip saddr <controller_ip> tcp dport 22 accept`. This task removes that
-    # exact line deterministically (the regex is anchored to the resolved
-    # controller_ip literal, so the CGNAT `ip saddr 100.64.0.0/10` line can
-    # never match) and re-applies the ruleset with the same mechanism the
-    # role uses (nft -f). In steady-state (bootstrap_mode=false) the line was
-    # never rendered, the replace is a no-op and the apply is skipped (guarded
-    # on .changed).
+    # nftables bootstrap rule removal. During a first deploy (bootstrap_mode=true via -e)
+    # the nftables_rules include above re-renders /etc/nftables.conf WITH the bootstrap ACCEPT line
+    # `ip saddr <controller_ip> tcp dport 22 accept`. This task removes that exact line deterministically.
     - name: "L2 | LOCKDOWN - Remove bootstrap ACCEPT rule from nftables.conf"
       ansible.builtin.replace:
         path: /etc/nftables.conf
         regexp: '^ip saddr {{ controller_ip | default("127.0.0.1") }} tcp dport 22 accept$'
         replace: ""
       register: _nft_bootstrap_cleanup
-      when: os_firewall_backend == 'nftables'
       tags: [lockdown, firewall]
 
     - name: "L2 | LOCKDOWN - Re-apply nftables ruleset after bootstrap rule removal"
       ansible.builtin.command: nft -f /etc/nftables.conf
       changed_when: false
       when:
-        - os_firewall_backend == 'nftables'
         - _nft_bootstrap_cleanup.changed
       tags: [lockdown, firewall]
-
 
     # ========================================================================
     # VERIFICATION - confirm DROP rules took effect before creating marker
     # ========================================================================
-
-    - name: "L2 | VERIFY - Check UFW SSH DROP rule in before.rules"
-      ansible.builtin.shell: grep -Eq 'tcp.*dport 22.*DROP' /etc/ufw/before.rules
-      changed_when: false
-      failed_when: false
-      register: _ufw_drop_verify
-      when: os_firewall_backend == 'ufw'
-      tags: [lockdown, firewall]
-
-    - name: "L2 | VERIFY - Fail if UFW SSH DROP not active"
-      ansible.builtin.fail:
-        msg: "SSH DROP rule missing from /etc/ufw/before.rules. Firewall lockdown FAILED on {{ inventory_hostname }}."
-      when:
-        - os_firewall_backend == 'ufw'
-        - _ufw_drop_verify is not skipped
-        - _ufw_drop_verify.rc != 0
-      tags: [lockdown, firewall]
 
     - name: "L2 | VERIFY - Check nftables default-drop policy is active"
       ansible.builtin.shell: nft list chain inet filter input | grep -q 'policy drop'
       changed_when: false
       failed_when: false
       register: _nft_drop_verify
-      when: os_firewall_backend == 'nftables'
       tags: [lockdown, firewall]
 
     - name: "L2 | VERIFY - Fail if nftables default-drop not active"
       ansible.builtin.fail:
         msg: "nftables default-drop policy not found. Firewall lockdown FAILED on {{ inventory_hostname }}."
       when:
-        - os_firewall_backend == 'nftables'
         - _nft_drop_verify is not skipped
         - _nft_drop_verify.rc != 0
       tags: [lockdown, firewall]

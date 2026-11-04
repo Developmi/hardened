@@ -98,7 +98,7 @@
       tags: [iptables, oci]
 
     # ======================================================================
-    # DESTRUCTIVE SECTION - backup, deadman, flush, UFW, cancel, mask
+    # DESTRUCTIVE SECTION - backup, deadman, flush, nftables, cancel, mask
     # ======================================================================
     # Only executes if mask file does NOT exist (idempotency).
     # Wrapped in block/rescue for auto-recovery on any failure.
@@ -174,13 +174,13 @@
             policy: ACCEPT
           tags: [iptables, oci]
 
-        - name: "Killswitch | Allow SSH during UFW transition"
+        - name: "Killswitch | Allow SSH during nftables transition"
           ansible.builtin.iptables:
             chain: INPUT
             protocol: tcp
             destination_port: "{{ ansible_port | default(22) }}"
             jump: ACCEPT
-            comment: "Fallback SSH gate if UFW fails; safe because sshd AllowUsers enforces CIDR limits."
+            comment: "Fallback SSH gate if nftables fails; safe because sshd AllowUsers enforces CIDR limits."
           tags: [iptables, oci]
 
         # === IPv6 ===
@@ -213,14 +213,14 @@
             policy: ACCEPT
           tags: [iptables, oci]
 
-        - name: "Killswitch | Allow SSH during UFW transition (IPv6)"
+        - name: "Killswitch | Allow SSH during nftables transition (IPv6)"
           ansible.builtin.iptables:
             ip_version: ipv6
             chain: INPUT
             protocol: tcp
             destination_port: "{{ ansible_port | default(22) }}"
             jump: ACCEPT
-            comment: "Backup SSH gate if UFW fails; safe via independent sshd AllowUsers restrictions."
+            comment: "Backup SSH gate if nftables fails; safe via independent sshd AllowUsers restrictions."
           tags: [iptables, oci]
 
         # ---- Phase 3: Persist flushed rules ----
@@ -241,7 +241,7 @@
           changed_when: false
           tags: [iptables, oci]
 
-        # ---- Phase 4: Restart Docker + trigger UFW reload ----
+        # ---- Phase 4: Restart Docker + trigger nftables reload ----
         - name: "Killswitch | Restart Docker to re-insert iptables rules"
           ansible.builtin.systemd:
             name: docker
@@ -249,12 +249,10 @@
           when: docker_installed | bool
           tags: [docker, oci]
 
-        - name: "Killswitch | Force UFW reload trigger"
-          ansible.builtin.file:
-            path: /etc/ufw/.reload_trigger
-            state: touch
-          changed_when: true
-          notify: Reload UFW
+        - name: "Killswitch | Trigger nftables reload"
+          ansible.builtin.command: nft -f /etc/nftables.conf
+          changed_when: false
+          notify: Restart nftables
 
         # ---- Phase 5: Cancel Deadman + mask (DD-1) ----
         # Directory creation BEFORE mask touch (critical per design).
@@ -267,7 +265,7 @@
           changed_when: false
           tags: [iptables, oci]
 
-        - name: "Killswitch | Cancel Deadman - UFW is active"
+        - name: "Killswitch | Cancel Deadman - nftables is active"
           ansible.builtin.shell: atq | grep 'iptables-restore' | awk '{print $1}' | xargs -r atrm
           changed_when: false
           failed_when: false

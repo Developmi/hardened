@@ -89,14 +89,9 @@
       tags: [always]
 
     # ── Dynamic vars (depend on ansible_facts gathered above) ────────────────
-    - name: "Molecule | Set OS detection vars"
-      ansible.builtin.set_fact:
-        _os_family: "{{ 'Ubuntu' if ansible_facts['distribution'] in ['Pop', 'Pop!_OS'] else ansible_facts['os_family'] }}"
-        _dist_major: "{{ ansible_facts['distribution_major_version'] | int }}"
-
     - name: "Molecule | Set dynamic group_vars for L2"
       ansible.builtin.set_fact:
-        os_firewall_backend: "{{ 'nftables' if (_os_family == 'Debian' and _dist_major >= 12) else 'ufw' }}"
+        os_firewall_backend: "nftables"
         # Skip sub-modules not needed in molecule
         l2_tailscale_enabled: false
         l2_crowdsec_enabled: false

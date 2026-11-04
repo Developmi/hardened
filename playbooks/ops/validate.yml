@@ -40,7 +40,7 @@
           - "curl: {{ 'INSTALLED' if 'curl' in ansible_facts.packages else 'MISSING' }}"
           - "wget: {{ 'INSTALLED' if 'wget' in ansible_facts.packages else 'MISSING' }}"
           - "git: {{ 'INSTALLED' if 'git' in ansible_facts.packages else 'MISSING' }}"
-          - "ufw: {{ 'INSTALLED' if 'ufw' in ansible_facts.packages else 'MISSING' }}"
+          - "nftables: {{ 'INSTALLED' if 'nftables' in ansible_facts.packages else 'MISSING' }}"
           - "apparmor: {{ 'INSTALLED' if 'apparmor' in ansible_facts.packages else 'MISSING' }}"
           - "apparmor-utils: {{ 'INSTALLED' if 'apparmor-utils' in ansible_facts.packages else 'MISSING' }}"
       tags: [l1-os-baseline, validate]

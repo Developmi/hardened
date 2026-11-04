@@ -19,4 +19,4 @@ _pinned_kernel: "{{ _pinned_kernel_ubuntu if ansible_facts['distribution'] == 'U
 
 pinned_packages: "{{ _pinned_kernel +
   ['openssh-server', 'openssh-client', 'openssh-sftp-server',
-   'systemd', 'systemd-sysv', 'ufw', 'crowdsec'] }}"
+   'systemd', 'systemd-sysv', 'crowdsec'] }}"

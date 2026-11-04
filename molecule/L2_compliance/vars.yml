@@ -18,11 +18,10 @@
 # ─── Hardening Profile ────────────────────────────────────────────────────────
 hardening_profile: server
 
-# ─── Firewall (dynamic: os_firewall_backend set in converge pre_tasks) ───────
+# ─── Firewall (unified: os_firewall_backend set in converge pre_tasks) ───────
 admin_cidr: "100.64.0.0/10"
 ssh_allowed_sources: "100.64.0.0/10"
 allowed_ports: []
-ufw_enable_ipv6: true
 bootstrap_mode: false
 controller_ip: undefined
 
