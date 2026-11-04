@@ -3,7 +3,7 @@
 # Each boolean controls whether the corresponding sub-role executes.
 # Override in group_vars or --extra-vars.
 
-l2_security_enabled: true         # SSH hardening, fail2ban, UFW
+l2_security_enabled: true         # SSH hardening, fail2ban, nftables
 l2_user_hardening_enabled: true   # User account hardening
 l2_tailscale_enabled: true        # Tailscale client setup
 l2_crowdsec_enabled: false        # NIST 800-53 SI-4 - opt-in

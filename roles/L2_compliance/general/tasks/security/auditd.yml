@@ -28,7 +28,6 @@
       -w /etc/sudoers -p wa -k sudoers_change
       -w /var/log/auth.log -p wa -k auth_log_tampering
       -w /etc/ssh/sshd_config -p wa -k ssh_config_change
-      -w /etc/ufw -p wa -k firewall_config
       -w /etc/nftables.conf -p wa -k firewall_config
       -w /etc/docker -p wa -k docker_config
     mode: "{{ auditd_rules_file_mode }}"

@@ -16,9 +16,6 @@ crowdsec_mode: detection_only
 hardening_profile: workstation
 
 # Security profile (workstation-appropriate)
-# UFW policy: deny (Zero Trust base layer).
-# Outbound is allowed by default. Inbound DHCP/mDNS are explicitly handled in the security role.
-ufw_policy: deny
 # Fail2ban: shorter bantime for laptops (avoid lockout without IPMI/console access)
 fail2ban_bantime: 10m
 fail2ban_maxretry: 5

@@ -21,9 +21,6 @@ observability_compose_recreate_policy: "auto" # valid: always, never, auto
 observability_compose_wait_timeout: 300
 observability_cadvisor_port: 18080
 
-# Keep dual-stack filtering enabled by default unless your environment is IPv4-only.
-ufw_enable_ipv6: true
-
 # Ingress deployment defaults (safe for all hosts)
 ingress_compose_pull_policy: "missing"
 ingress_compose_recreate_policy: "auto"
@@ -91,11 +88,9 @@ systemd_nproc_hard: 65536
 # Used by downstream dispatchers (firewall, packages, etc.).
 _os_family: "{{ 'Ubuntu' if ansible_facts['distribution'] in ['Pop', 'Pop!_OS'] else ansible_facts['os_family'] }}"
 
-# os_firewall_backend selects the OS-appropriate firewall:
-#   - Ubuntu / Pop OS → ufw
-#   - Debian 12+        → nftables
-# Override per host if you need a different backend.
-os_firewall_backend: "{{ 'nftables' if (_os_family == 'Debian' and ansible_facts['distribution_major_version'] | int >= 12) else 'ufw' }}"
+# os_firewall_backend (NIST SC-7 / CIS §3.5 Track A):
+# Unified in-kernel nftables across all Linux distributions (Debian, Ubuntu).
+os_firewall_backend: "nftables"
 
 # ─── Hardening Profile Dispatcher ────────────────────────────────────────────
 # server:      strict firewalls, short fail2ban bans, CrowdSec enforcement
@@ -111,7 +106,7 @@ admin_cidr: "100.64.0.0/10"
 # Must match LAYER_BOUNDARIES.md §L2 Promise 5
 ssh_allowed_sources: "{{ admin_cidr }}"
 
-# Port whitelist for firewall (ufw allow / nftables accept).
+# Port whitelist for firewall (nftables accept).
 # SSH (22) is NOT here - handled separately with source restrictions
 # (Tailscale + private subnets only). Add application ports here instead.
 allowed_ports: []

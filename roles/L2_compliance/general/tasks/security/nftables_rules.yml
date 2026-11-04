@@ -35,6 +35,19 @@
   failed_when: false
   tags: [firewall, l2-compliance, nist, sc-7]
 
+- name: "SC-7 | Purge legacy UFW package (CIS §3.5 Track A / NIST SC-7)"
+  ansible.builtin.apt:
+    name: ufw
+    state: absent
+    purge: true
+  tags: [firewall, l2-compliance, nist, sc-7]
+
+- name: "SC-7 | Ensure residual /etc/ufw directory is absent"
+  ansible.builtin.file:
+    path: /etc/ufw
+    state: absent
+  tags: [firewall, l2-compliance, nist, sc-7]
+
 - name: "SC-7 | Install nftables package"
   ansible.builtin.apt:
     name: nftables

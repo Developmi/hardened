@@ -3,7 +3,7 @@
 # Each sub-role is gated by its enabled flag from defaults/main.yml.
 # Tags preserved at include level for selective execution.
 
-- name: "L2 | Include security hardening (SSH, fail2ban, UFW)"
+- name: "L2 | Include security hardening (SSH, fail2ban, nftables)"
   ansible.builtin.include_tasks: "{{ role_path }}/general/tasks/security/main.yml"
   when: l2_security_enabled | default(true)
   tags: [l2-compliance, security]

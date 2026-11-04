@@ -19,26 +19,17 @@
     mode: "0755"
   tags: [compliance, l2-compliance, nist, sc-7]
 
-- name: "SC-7 | Collect firewall status (ufw)"
-  ansible.builtin.command: ufw status verbose
-  register: _sc7_ufw
-  changed_when: false
-  failed_when: false
-  when: os_firewall_backend == 'ufw'
-  tags: [compliance, l2-compliance, nist, sc-7]
-
 - name: "SC-7 | Collect firewall status (nftables)"
   ansible.builtin.command: nft list ruleset
   register: _sc7_nft
   changed_when: false
   failed_when: false
-  when: os_firewall_backend == 'nftables'
   tags: [compliance, l2-compliance, nist, sc-7]
 
 - name: "SC-7 | Write firewall status evidence"
   ansible.builtin.copy:
     dest: /srv/evidence/nist/sc-7/firewall_status
-    content: "{{ _sc7_ufw.stdout if os_firewall_backend == 'ufw' else _sc7_nft.stdout }}"
+    content: "{{ _sc7_nft.stdout | default('nftables ruleset empty or unavailable') }}"
     mode: "0640"
   tags: [compliance, l2-compliance, nist, sc-7]
 
