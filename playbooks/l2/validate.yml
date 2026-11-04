@@ -63,10 +63,10 @@
       tags: [validate, l2-hardening]
 
     # ========================================================================
-    # Firewall (os_firewall_backend: nftables or ufw)
+    # Firewall (os_firewall_backend: nftables - NIST SC-7)
     # ========================================================================
 
-    - name: "L2 | Check nftables ruleset (Debian 12)"
+    - name: "L2 | Check nftables ruleset"
       ansible.builtin.shell: |
         set -o pipefail
         nft list ruleset 2>/dev/null | wc -l
@@ -74,26 +74,11 @@
         executable: /bin/bash
       register: _nft_ruleset
       changed_when: false
-      when: os_firewall_backend == 'nftables'
-      tags: [validate, l2-hardening]
-
-    - name: "L2 | Check UFW status (Ubuntu)"
-      ansible.builtin.shell: |
-        set -o pipefail
-        ufw status verbose
-      args:
-        executable: /bin/bash
-      register: _ufw_status
-      changed_when: false
-      when: os_firewall_backend == 'ufw'
       tags: [validate, l2-hardening]
 
     - name: "L2 | Set firewall result"
       ansible.builtin.set_fact:
-        _l2_firewall: >-
-          {{ 'PASS' if (os_firewall_backend == 'nftables' and (_nft_ruleset.stdout | trim | int) > 0)
-                       or (os_firewall_backend == 'ufw' and 'Status: active' in _ufw_status.stdout)
-             else 'FAIL' }}
+        _l2_firewall: "{{ 'PASS' if (_nft_ruleset.stdout | trim | int) > 0 else 'FAIL' }}"
       tags: [validate, l2-hardening]
 
     # ========================================================================
@@ -282,23 +267,7 @@
       register: _nft_ssh_rules
       changed_when: false
       failed_when: false
-      when:
-        - _tailscale_check.rc == 0
-        - os_firewall_backend == 'nftables'
-      tags: [validate, l2-hardening]
-
-    - name: "L2 | Check SSH rules in UFW"
-      ansible.builtin.shell: |
-        set -o pipefail
-        ufw status verbose 2>/dev/null
-      args:
-        executable: /bin/bash
-      register: _ufw_ssh_check
-      changed_when: false
-      failed_when: false
-      when:
-        - _tailscale_check.rc == 0
-        - os_firewall_backend == 'ufw'
+      when: _tailscale_check.rc == 0
       tags: [validate, l2-hardening]
 
     - name: "L2 | Set SSH public reachability result"
@@ -306,10 +275,8 @@
         _l2_ssh_public: >-
           {{ 'SKIP' if bootstrap_mode | default(false)
              else 'SKIP' if _tailscale_check.rc != 0
-             else 'PASS' if os_firewall_backend == 'nftables' and 'iifname "tailscale0" tcp dport 22 accept' in (_nft_ssh_rules.stdout | default(''))
-             else 'PASS' if os_firewall_backend == 'ufw' and ('DROP' in (_ufw_ssh_check.stdout | default('')) and ('22' in (_ufw_ssh_check.stdout | default(''))))
-             else 'WARN' if os_firewall_backend == 'nftables' and (_nft_ssh_rules is skipped)
-             else 'WARN' if os_firewall_backend == 'ufw' and (_ufw_ssh_check is skipped)
+             else 'PASS' if 'iifname "tailscale0" tcp dport 22 accept' in (_nft_ssh_rules.stdout | default(''))
+             else 'WARN' if (_nft_ssh_rules is skipped)
              else 'FAIL'
           }}
       tags: [validate, l2-hardening]
