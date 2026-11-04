@@ -76,8 +76,7 @@
 
 - name: Determine distribution ID for Tailscale
   ansible.builtin.set_fact:
-    _tailscale_distro: "{{ 'ubuntu' if ansible_facts['distribution'] | lower in ['pop', 'pop!_os'] else ansible_facts['distribution'] | lower }}"
-    distro_id: "{{ 'ubuntu' if ansible_facts['distribution'] | lower in ['pop', 'pop!_os'] else ansible_facts['distribution'] | lower }}"
+    distro_id: "{{ ansible_facts['distribution'] | lower }}"
     distro_release: "{{ ansible_facts['distribution_release'] }}"
   tags: [l2-compliance, tailscale]
 
@@ -134,14 +133,14 @@
       {{ '(auto-update enabled)' if (tailscale_version | default('*')) == '*' else '(pinned with dpkg hold)' }}
   tags: [l2-compliance, tailscale]
 
-- name: Install WireGuard kernel modules (Ubuntu / Pop OS)
+- name: Install WireGuard kernel modules (Ubuntu)
   ansible.builtin.apt:
     name: "linux-modules-extra-{{ ansible_facts['kernel'] }}"
     state: present
     lock_timeout: 600
     allow_change_held_packages: true
   register: wireguard_pkg_install
-  when: ansible_facts['distribution'] in ['Ubuntu', 'Pop', 'Pop!_OS']
+  when: ansible_facts['distribution'] == 'Ubuntu'
   failed_when: >-
     wireguard_pkg_install is failed and
     ('No package matching' not in (wireguard_pkg_install.msg | default(''))) and
@@ -216,7 +215,7 @@
 - name: Determine Tailscale ACL tag for this node
   ansible.builtin.set_fact:
     tailscale_acl_tag: >-
-      {{ 'tag:brain' if 'brain' in group_names else 'tag:muscle' if 'muscle' in group_names else 'tag:local' if 'local' in group_names else '' }}
+      {{ 'tag:brain' if 'brain' in group_names else 'tag:muscle' if 'muscle' in group_names else '' }}
   tags: [l2-compliance, tailscale]
 
 - name: Validate node has supported ACL tag mapping
@@ -225,7 +224,7 @@
       - tailscale_acl_tag | length > 0
     fail_msg: >-
       Unable to derive Tailscale ACL tag for host {{ inventory_hostname }}.
-      Expected host membership in inventory group 'brain', 'muscle', or 'local'.
+      Expected host membership in inventory group 'brain' or 'muscle'.
   tags: [l2-compliance, tailscale]
 
 - name: Clear stale Tailscale state when status indicates NeedsLogin
@@ -490,7 +489,6 @@
 # (connection: local + become: false as play keywords). Task-level
 # become: false on delegated tasks is fragile because an ansible_become var
 # wins over task keywords (see ansible.cfg [privilege_escalation]).
-# local-devices.yml applies the same chain from its own PHASE 0.1 play.
 # ------------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------------

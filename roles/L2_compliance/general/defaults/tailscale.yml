@@ -6,7 +6,7 @@
 # are configured in inventory/group_vars/all/tailscale.yml. Sensitive identities
 # and credentials reside in inventory/group_vars/all/secrets.sops.yml.
 
-# Manual authentication bypass (e.g., local workstation devices)
+# Manual authentication bypass (false by default; nodes require tailscale_auth_key)
 tailscale_manual_auth: false
 
 # Fallback node attributes (empty by default)

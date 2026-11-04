@@ -185,7 +185,6 @@ validate_playbooks() {
         playbooks/l6/engine.yml \
         playbooks/l6/portainer.yml \
         playbooks/ops/bootstrap.yml \
-        playbooks/ops/local-devices.yml \
         playbooks/ops/nuke.yml \
         playbooks/ops/validate.yml; do
         if [[ -f "$pb" ]]; then

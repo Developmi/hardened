@@ -9,22 +9,22 @@
 # =============================================================================
 # Installs Docker Engine with pinned versions for Docker Cluster
 # Arch auto-detected via ansible_facts['architecture'] fact
-# Supports: Debian 11/12, Ubuntu 22.04/24.04, Pop OS (Ubuntu-based)
+# Supports: Debian 11/12, Ubuntu 22.04/24.04
 # Versions controlled centrally in group_vars/all/secrets.sops.yml
 # =============================================================================
 
-- name: Normalize Pop OS distribution to Ubuntu (Pop OS is Ubuntu-based)
+- name: Set Docker distribution and release facts
   ansible.builtin.set_fact:
-    _docker_distro: "{{ 'Ubuntu' if ansible_facts['distribution'] in ['Pop', 'Pop!_OS'] else ansible_facts['distribution'] }}"
+    _docker_distro: "{{ ansible_facts['distribution'] }}"
     _docker_release: "{{ ansible_facts['distribution_release'] }}"
-  when: ansible_facts['distribution'] in ['Ubuntu', 'Debian', 'Pop', 'Pop!_OS']
+  when: ansible_facts['distribution'] in ['Ubuntu', 'Debian']
   tags: [l6-runtime, docker, compose]
 
 - name: Fail if OS is not a supported Docker distribution
   ansible.builtin.fail:
     msg: >
       Unsupported OS for Docker: {{ ansible_facts['distribution'] }}.
-      Supported: Ubuntu, Debian, Pop OS (all with apt-based Docker repos).
+      Supported: Ubuntu, Debian.
   when: _docker_distro is not defined
   tags: [l6-runtime, docker, compose]
 
@@ -37,7 +37,6 @@
     fail_msg: |
       docker_version_map must be defined in group_vars/all/secrets.sops.yml
       Current OS: {{ ansible_facts['distribution'] }} {{ _docker_release }}
-      (normalized to {{ _docker_distro }} for Pop OS compatibility)
     success_msg: "Docker version: {{ docker_version_map[_docker_distro][_docker_release] }}"
   tags: [l6-runtime, docker, compose]
 

@@ -291,8 +291,6 @@ backup-now:
 	$(ANSIBLE_RUN) playbooks/l6/backup-stack.yml $(ANSIBLE_FLAGS) --tags stack_backup --limit brain
 provision-host:
 	$(ANSIBLE_RUN) playbooks/ops/bootstrap.yml $(ANSIBLE_FLAGS)
-deploy-local:
-	$(ANSIBLE_RUN) playbooks/ops/local-devices.yml $(ANSIBLE_FLAGS)
 verify-lockdown:
 	@$(MAKE) verify COMPONENT=lockdown
 verify-tailscale:
@@ -318,6 +316,6 @@ test-layer:
 	install-collections check-toolchain setup-toolchain deploy-l1 deploy-lockdown \
 	deploy-compliance reconnect-tailscale validate-l1 validate-l2 audit-full \
 	deploy-exporters deploy-monitoring-stack verify-caddy heal-caddy \
-	deploy-backup-stack deploy-backup-engine backup-now provision-host deploy-local \
+	deploy-backup-stack deploy-backup-engine backup-now provision-host \
 	verify-lockdown verify-tailscale verify-crowdsec verify-auditd verify-observability \
 	verify-timers test-layer
