@@ -43,8 +43,6 @@ stack/
 │   │   │   └── main.yml
 │   │   ├── muscle/                     ← Server-grade, backups + observability
 │   │   │   └── main.yml
-│   │   ├── local/                      ← Workstation-grade, no backups, no observability
-│   │   │   └── main.yml
 │   │   ├── app_<name>/                 ← Per-application profile overrides
 │   │   │   └── vars.yml
 ├── roles/
@@ -174,7 +172,6 @@ Layers MUST NOT reach across trust boundaries:
 | Package Manager       | ✅ apt               | ✅ apt               | ✅ apt               | ✅ apt               | ✅ apt              | ✅ apt              | ✅ apt              | ✅ apt              |
 | Update/Hold Policies  | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             | ✅ Full             | ✅ Full             |
 | Auto-upgrade Checker  | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             | ✅ Full             | ✅ Full             |
-| Pop OS → Ubuntu Norm. | ✅ Full              | ✅ Full              | - (N/A)              | - (N/A)              | - (N/A)             | - (N/A)             | - (N/A)             | - (N/A)             |
 | NIST 800-53 Hardening | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             | ✅ Full             | ✅ Full             |
 | CIS Benchmarks        | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full              | ⚠️ Minor delta      | ⚠️ Minor delta      | ⚠️ Minor delta      | ⚠️ Minor delta      |
 | Firewall              | ✅ ufw               | ✅ ufw               | ✅ ufw               | ✅ ufw               | ⚠️ nftables wrapper | ⚠️ nftables wrapper | ⚠️ nftables wrapper | ⚠️ nftables wrapper |
@@ -207,7 +204,7 @@ Layers MUST NOT reach across trust boundaries:
 ```
 Layer 1: roles/<role>/defaults/main.yml          ← Lowest priority - role fallbacks
 Layer 2: group_vars/all/main.yml                  ← Global safe defaults
-Layer 3: group_vars/{brain,muscle,local}/main.yml ← Host-class config
+Layer 3: group_vars/{brain,muscle}/main.yml       ← Host-class config
 Layer 4: group_vars/app_<name>/vars.yml           ← Application-level overrides
 
 ```
@@ -235,13 +232,12 @@ Layer 4: group_vars/app_<name>/vars.yml           ← Application-level override
 ### Dispatcher Pattern
 
 ```
-hardening_profile: server | workstation
+hardening_profile: server
 ```
 
-- **`server`**: Full hardening - server-grade firewall (`ufw deny`/`nftables deny`), fail2ban 1h bantime, CrowdSec enforcement, observability stack, backups enabled.
-- **`workstation`**: Tailored hardening - UFW deny (Zero Trust base), fail2ban 10m bantime, CrowdSec skipped (false positives from network changes), no observability, no backups.
+- **`server`**: Full server hardening - in-kernel nftables firewall (`policy drop`), fail2ban brute-force protection, CrowdSec collaborative threat intelligence, VictoriaMetrics/Grafana observability stack, Restic backup automation.
 
-The dispatcher is a single variable in `group_vars/{brain,muscle,local}/main.yml`. The `local` host class sets `hardening_profile: workstation`; `brain` and `muscle` set `server`.
+The dispatcher is configured per host class in `group_vars/{brain,muscle}/main.yml` and defaults globally to `server` in `group_vars/all/main.yml`. Developer and operator workstation security follows a Zero Trust model outside Ansible management (see [DEVELOPER_WORKSTATION_GUIDE.md](../security/DEVELOPER_WORKSTATION_GUIDE.md)).
 
 ---
 
@@ -344,21 +340,21 @@ Target Host: /srv/evidence/nist/<control>/
 
 ---
 
-## 7. Host Classes - brain / muscle / local
+## 7. Host Classes - brain / muscle
 
 ### Capability Matrix
 
-| Capability            | `brain`                                                                                                           | `muscle`                                                                               | `local`                                                        |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| **Backups**           | ✅ Enabled - app data (L5) + runtime state (L6)                                                                   | ✅ Enabled - app data (L5) + runtime state (L6)                                        | ❌ Disabled                                                    |
-| **Observability**     | ✅ Full stack (VictoriaMetrics, Grafana, Loki)                                                                    | ✅ Full stack (VictoriaMetrics, Grafana, Loki)                                         | ❌ Disabled                                                    |
-| **Hardening Profile** | Server-grade (`hardening_profile: server`)                                                                        | Server-grade (`hardening_profile: server`)                                             | Workstation-grade (`hardening_profile: workstation`)           |
-| **Resource Profile**  | Management node - moderate CPU, persistent storage for backups + evidence                                         | Compute worker - higher CPU/RAM for application workloads, persistent storage for data | Personal workstation - variable, no guaranteed resources       |
-| **Failure Domain**    | Single point of failure for management (Portainer, Grafana, monitoring). Redundancy via multiple brains possible. | Stateless apps - any muscle node can be replaced.                                      | Independent - failure does not affect other nodes              |
-| **CrowdSec**          | ✅ Installed (collaborative IPS)                                                                                  | ✅ Installed (collaborative IPS)                                                       | ❌ Skipped (false positives from network changes)              |
-| **Tailscale Auth**    | Automated (`--authkey`)                                                                                           | Automated (`--authkey`)                                                                | Manual (`tailscale up` by user)                                |
-| **UFW Policy**        | Default deny (`policy: deny`)                                                                                     | Default deny (`policy: deny`)                                                          | Deny (Zero Trust base layer; inbound denied, outbound allowed) |
-| **Fail2ban Bantime**  | 1 hour                                                                                                            | 1 hour                                                                                 | 10 minutes (avoids lockout without IPMI/console)               |
+| Capability            | `brain`                                                                                                           | `muscle`                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Backups**           | ✅ Enabled - app data (L5) + runtime state (L6)                                                                   | ✅ Enabled - app data (L5) + runtime state (L6)                                        |
+| **Observability**     | ✅ Full stack (VictoriaMetrics, Grafana, Loki)                                                                    | ✅ Full stack (VictoriaMetrics, Grafana, Loki)                                         |
+| **Hardening Profile** | Server-grade (`hardening_profile: server`)                                                                        | Server-grade (`hardening_profile: server`)                                             |
+| **Resource Profile**  | Management node - moderate CPU, persistent storage for backups + evidence                                         | Compute worker - higher CPU/RAM for application workloads, persistent storage for data |
+| **Failure Domain**    | Single point of failure for management (Portainer, Grafana, monitoring). Redundancy via multiple brains possible. | Stateless apps - any muscle node can be replaced.                                      |
+| **CrowdSec**          | ✅ Installed (collaborative IPS)                                                                                  | ✅ Installed (collaborative IPS)                                                       |
+| **Tailscale Auth**    | Automated (`--authkey`)                                                                                           | Automated (`--authkey`)                                                                |
+| **Firewall Policy**   | Default deny (`policy drop`, nftables)                                                                            | Default deny (`policy drop`, nftables)                                                 |
+| **Fail2ban Bantime**  | 1 hour                                                                                                            | 1 hour                                                                                 |
 
 ### Allowed Roles per Class
 
@@ -366,15 +362,15 @@ Target Host: /srv/evidence/nist/<control>/
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | **brain**  | `L1_os_baseline/general`, `L2_compliance/general/tasks/security`, `L2_compliance/general` (user_hardening, tailscale), `L2_compliance/nist_800_53` (CrowdSec, compliance), `L3_observability/general`, `L4_networking/caddy`, `L6_runtime/docker_compose`, `L6_runtime/portainer` (optional), `L6_runtime/backup`             | 1 per platform (or ≥2 for HA) |
 | **muscle** | `L1_os_baseline/general`, `L2_compliance/general/tasks/security`, `L2_compliance/general` (user_hardening, tailscale), `L2_compliance/nist_800_53` (CrowdSec, compliance), `L3_observability/general`, `L4_networking/caddy`, `L6_runtime/docker_compose`, `L6_runtime/portainer` (optional, Edge Agent), `L6_runtime/backup` | N (scale horizontally)        |
-| **local**  | `L1_os_baseline/general`, `L2_compliance/general/tasks/security` (workstation profile), `L2_compliance/general` (tailscale, manual auth, `tag:local`), `L6_runtime/docker_compose`                                                                                                                                            | Per operator                  |
+
+> **Note on Workstation Devices**: Operator and developer endpoints are external client nodes connecting via Tailscale; they are not provisioned or managed through Ansible host classes. See [DEVELOPER_WORKSTATION_GUIDE.md](../security/DEVELOPER_WORKSTATION_GUIDE.md).
 
 ### Host Class Selection
 
-Determined by `group_vars/{brain,muscle,local}/main.yml`. A host's inventory group membership determines which group_vars are applied. The `hardening_profile` variable is set per class:
+Determined by `group_vars/{brain,muscle}/main.yml`. A host's inventory group membership determines which group_vars are applied:
 
-- `brain/main.yml` → `hardening_profile: server`
-- `muscle/main.yml` → `hardening_profile: server`
-- `local/main.yml` → `hardening_profile: workstation`
+- `brain/main.yml` → Management node tunables
+- `muscle/main.yml` → Worker node tunables
 
 ### Operational Scale & Sizing Boundaries
 
@@ -382,12 +378,12 @@ This repository is engineered under the **"Boring is Better"** philosophy: provi
 
 #### Hardware Profiles & Node Allocation
 
-| Host Class | Hardware Profile | Recommended Count | Architectural Role & Workload Distribution |
-| :--- | :--- | :--- | :--- |
-| **`brain`** | **High-Spec** (8–16 vCPU, 32–64 GB RAM) | **1 – 3 nodes** | Centralized control plane: VictoriaMetrics, Loki, Grafana, Portainer. 3 nodes provide active quorum for HA. |
-| **`brain`** | **Low-Spec** (2–4 vCPU, 4–8 GB RAM) | **3 – 5 nodes** | Role-partitioned control plane: dedicated nodes for Ingress/VPN, metrics ingestion, log indexing (Loki), and management across low-cost VPS instances. |
-| **`muscle`** | **Any compute tier** | **1 – 50 nodes** | Standard push-based Ansible sweet spot. Full parallel execution with low drift and minimal latency. |
-| **`muscle`** | **Any compute tier** | **50 – 100 nodes** | Upper operational ceiling for push-based Ansible. Deployments should target specific nodes or tags (`--limit muscle-X`). |
+| Host Class   | Hardware Profile                        | Recommended Count  | Architectural Role & Workload Distribution                                                                                                             |
+| :----------- | :-------------------------------------- | :----------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`brain`**  | **High-Spec** (8–16 vCPU, 32–64 GB RAM) | **1 – 3 nodes**    | Centralized control plane: VictoriaMetrics, Loki, Grafana, Portainer. 3 nodes provide active quorum for HA.                                            |
+| **`brain`**  | **Low-Spec** (2–4 vCPU, 4–8 GB RAM)     | **3 – 5 nodes**    | Role-partitioned control plane: dedicated nodes for Ingress/VPN, metrics ingestion, log indexing (Loki), and management across low-cost VPS instances. |
+| **`muscle`** | **Any compute tier**                    | **1 – 50 nodes**   | Standard push-based Ansible sweet spot. Full parallel execution with low drift and minimal latency.                                                    |
+| **`muscle`** | **Any compute tier**                    | **50 – 100 nodes** | Upper operational ceiling for push-based Ansible. Deployments should target specific nodes or tags (`--limit muscle-X`).                               |
 
 #### Scaling Beyond 100 Nodes (Ecosystem Positioning)
 
@@ -398,6 +394,7 @@ This repository is engineered under the **"Boring is Better"** philosophy: provi
 #### Ingress Routing Catalog & Secrets Architecture
 
 Routing topology and secrets adhere to strict separation of concerns:
+
 - **Routing Catalog** (`inventory/group_vars/all/ingress.yml`): Plain YAML catalog of domains, upstreams, headers, and security profiles. Ignored by `.gitignore` to prevent leaking private client infrastructure in open-source environments (template provided in `ingress.yml.example`).
 - **Cryptographic Secrets** (`inventory/group_vars/all/secrets.sops.yml`): Strictly reserved for sensitive credentials (TLS private keys in `cloudflare_origin_certs`, `caddy_ui_token`, R2 access keys).
 - **Ingress Template** (`roles/L4_networking/caddy/templates/Caddyfile.j2`): 100% data-driven, version-controlled Jinja2 template with zero hardcoded values, featuring automatic global `metrics` export and per-service WAF/TLS client routing.

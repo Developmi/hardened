@@ -109,7 +109,7 @@ Makefile handles prompting automatically in a scalable way:
 
 - If inventory contains a host with `ansible_user` different from `root`, it automatically adds `--ask-become-pass`.
 - If all hosts are `root`, it does not add become password prompt.
-- Deploy targets do NOT pass `--ask-vault-pass` by default: runtime secrets decrypt transparently via SOPS+age. Only the six Tailscale trio consumers pin the flag until the trio expires (D4): `deploy-hardening`, `deploy-compliance`, `reconnect-tailscale`, `deploy-local`, `nuke`, `provision-host`.
+- Deploy targets do NOT pass `--ask-vault-pass` by default: runtime secrets decrypt transparently via SOPS+age. Only the five Tailscale trio consumers pin the flag until the trio expires (D4): `deploy-hardening`, `deploy-compliance`, `reconnect-tailscale`, `nuke`, `provision-host`.
 
 Examples:
 
@@ -1013,7 +1013,6 @@ Run individual playbooks for targeted operations.
 | `l3/stack.yml`          | `make deploy-monitoring`                  | VictoriaMetrics + Grafana + Loki (brain only)  |
 | `l6/backup-appdata.yml` | `make deploy-backups`                     | App data backup (database dumps → Restic → R2) |
 | `l6/backup-engine.yml`  | `make deploy-backup-engine`               | Systemd backup timer and engine scheduling     |
-| `local-devices.yml`     | `make deploy-local`                       | Workstation hardening                          |
 | `l2/compliance.yml`     | `make deploy-compliance`                  | Compliance audit tags only                     |
 
 ### 5.3 Selective Deploy (Tags / Limits)
@@ -1242,7 +1241,7 @@ make verify-tailscale
 
 > **Note:** Tailscale key rotation does not disrupt existing mesh connections. Nodes already authenticated remain connected. New keys apply only on re-auth.
 
-> **Vault retirement gate (D4):** the Tailscale auth/ACL keys (the "trio": `tailscale_auth_key`, `tailscale_acl_key`, `tailscale_acl_client_id`) are the ONLY remaining Ansible Vault contents. At key expiry: (1) delete the trio from the vault, (2) remove `inventory/group_vars/all/secrets.yml`, (3) remove the `--ask-vault-pass` literals from the six tailscale consumers in the Makefile (`deploy-hardening`, `deploy-compliance`, `reconnect-tailscale`, `deploy-local`, `nuke`, `provision-host`), (4) verify `grep -n -- '--ask-vault-pass' Makefile` returns zero matches - the vault then exists only for bootstrap.
+> **Vault retirement gate (D4):** the Tailscale auth/ACL keys (the "trio": `tailscale_auth_key`, `tailscale_acl_key`, `tailscale_acl_client_id`) are the ONLY remaining Ansible Vault contents. At key expiry: (1) delete the trio from the vault, (2) remove `inventory/group_vars/all/secrets.yml`, (3) remove the `--ask-vault-pass` literals from the five tailscale consumers in the Makefile (`deploy-hardening`, `deploy-compliance`, `reconnect-tailscale`, `nuke`, `provision-host`), (4) verify `grep -n -- '--ask-vault-pass' Makefile` returns zero matches - the vault then exists only for bootstrap.
 
 ### 7.5 Docker Credential Rotation
 

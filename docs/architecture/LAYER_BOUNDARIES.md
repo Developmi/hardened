@@ -109,7 +109,7 @@ OpenSource surface. Audit trail: `docs/compliance/evidence/L0_AUDIT.md`.
 L1 standardizes the operating system. It is the **bottom of the OpenSource
 surface** - the first layer that any Ansible playbook touches. L1 owns:
 package manager configuration (apt sources, pinning), update/hold policies,
-auto-upgrade checker, OS family detection, Pop OS → Ubuntu normalization,
+auto-upgrade checker, OS family detection and validation,
 timezone, locale, and kernel module blacklisting (`cramfs`, `freevxfs`, etc.).
 
 L1 MUST detect the host architecture (amd64/arm64) and make it available as
@@ -119,7 +119,7 @@ L1 MUST detect the host architecture (amd64/arm64) and make it available as
 
 1. **Package manager is configured and consistent** - apt sources point to reliable mirrors, hold pins are applied, no stale or broken packages.
 2. **Update policies are active** - unattended-upgrades configured per host class. Security updates auto-applied; non-security updates follow declared policy.
-3. **OS family is normalized** - Pop OS is detected and remapped to Ubuntu. `ansible_distribution` and `ansible_os_family` are reliable facts for upper layers.
+3. **OS family is validated** - distribution is validated against supported targets (Debian 12, Ubuntu 22.04). `ansible_distribution` and `ansible_os_family` are reliable facts for upper layers.
 4. **Kernel modules are clean** - insecure/unnecessary modules (`cramfs`, `freevxfs`, `hfs`, `hfsplus`, `squashfs`, `udf`) are blacklisted.
 5. **Architecture is declared** - `ansible_architecture` is set (amd64 or arm64) and available as a fact for all upper layers.
 6. **Time and locale are correct** - timezone is set, NTP is active (via systemd-timesyncd or chrony).
@@ -152,13 +152,12 @@ well-understood layer: it applies the same logic regardless of host class.
 
 ### Contract Breach
 
-| Failure Mode                                 | Consequence                                                                                               | Detection                                                                                                                 |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Package manager broken (404, unsigned repos) | L2 cannot install `ufw`, `fail2ban`, CrowdSec. L6 cannot install Docker.                                  | `apt update` → non-zero exit. `playbooks/site.yml` fails at L1.                                                           |
-| Unattended-upgrades not configured           | Security patches not applied. CVEs accumulate.                                                            | `compliance.yml` checks `unattended-upgrades` status. L3 alerts if packages held > 30 days.                               |
-| Pop OS not normalized                        | `ansible_distribution` returns "Pop!\_OS" instead of "Ubuntu". OS-specific `when:` conditions fail in L2. | `gather_facts` output shows unexpected `ansible_distribution`. `playbooks/site.yml` fails at L2 with undefined variables. |
-| Kernel modules not blacklisted               | `cramfs`, `freevxfs` loadable. NIST control SC-7 violation.                                               | `compliance.yml` checks `/etc/modprobe.d/blacklist.conf`. Evidence missing from `/srv/evidence/nist/sc-7/`.               |
-| Wrong timezone/NTP                           | Log timestamps are incorrect. TLS certificate validation may fail. Grafana dashboards show wrong times.   | L3 monitoring detects clock skew. Caddy logs show `x509: certificate has expired or is not yet valid`.                    |
+| Failure Mode                                 | Consequence                                                                                             | Detection                                                                                                   |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Package manager broken (404, unsigned repos) | L2 cannot install `ufw`, `fail2ban`, CrowdSec. L6 cannot install Docker.                                | `apt update` → non-zero exit. `playbooks/site.yml` fails at L1.                                             |
+| Unattended-upgrades not configured           | Security patches not applied. CVEs accumulate.                                                          | `compliance.yml` checks `unattended-upgrades` status. L3 alerts if packages held > 30 days.                 |
+| Kernel modules not blacklisted               | `cramfs`, `freevxfs` loadable. NIST control SC-7 violation.                                             | `compliance.yml` checks `/etc/modprobe.d/blacklist.conf`. Evidence missing from `/srv/evidence/nist/sc-7/`. |
+| Wrong timezone/NTP                           | Log timestamps are incorrect. TLS certificate validation may fail. Grafana dashboards show wrong times. | L3 monitoring detects clock skew. Caddy logs show `x509: certificate has expired or is not yet valid`.      |
 
 ---
 
@@ -179,20 +178,19 @@ enforcement vs detection-only toggle), OCI killswitch (conditional, Ubuntu
 OCI only), NIST/CIS evidence collection to `/srv/evidence/`, and Tailscale
 client enrollment.
 
-The `hardening_profile` dispatcher (`server` | `workstation`) controls
-intensity: `server` applies full hardening (CrowdSec enforcement, fail2ban 1h
-bantime, strict UFW deny), `workstation` applies tailored hardening
-(CrowdSec skipped, fail2ban 10m bantime, UFW deny with relaxed outbound).
+The `hardening_profile` dispatcher (`server`) applies server-grade
+hardening: CrowdSec enforcement, fail2ban brute-force protection,
+in-kernel nftables default-drop firewall, and strict sysctl tuning.
 
 ### Promises
 
 1. **SSH is hardened** - password auth disabled, root login disabled, key-only access, strict cipher/MAC/KEX algorithms.
-2. **Firewall is active and enforcing** - default deny inbound. Only declared ports are open. Backend auto-selected: ufw on Ubuntu, nftables on Debian 12.
+2. **Firewall is active and enforcing** - default deny inbound (`policy drop`). Only declared ports are open via unified in-kernel nftables.
 3. **fail2ban is running** - configured per host class. Protects SSH from brute-force.
-4. **CrowdSec is operational** - installed and configured. Enforcement or detection-only per `hardening_profile`.
+4. **CrowdSec is operational** - installed and configured.
 5. **Kernel is hardened** - sysctl parameters applied (`net.ipv4.tcp_syncookies`, `kernel.kptr_restrict`, etc.). NIST CM-7 controls verified.
 6. **Compliance evidence is collected** - machine-generated evidence files written to `/srv/evidence/nist/<control>/`. Traceable to Ansible task tags.
-7. **Tailscale is enrolled** - host is connected to the Tailscale mesh. `brain`/`muscle` use automated auth; `local` uses manual auth.
+7. **Tailscale is enrolled** - host is connected to the Tailscale mesh with automated node auth.
 
 ### Forbids
 
@@ -258,8 +256,7 @@ Loki (log aggregation), scrape target configuration, health check endpoints,
 and alerting rules. L3 is the **monitoring layer** - it watches everything
 above and below it without modifying it.
 
-L3 is deployed only on `brain` and `muscle` host classes. `local` hosts skip
-L3 entirely.
+L3 is deployed across `brain` and `muscle` host classes.
 
 ### Promises
 
@@ -431,7 +428,7 @@ use to deploy their own application instances.
 - MUST NOT configure monitoring targets. That is L3 (L5 only declares `monitoring.health_endpoint` - L3 acts on it).
 - MUST NOT configure Caddy ingress routes. That is L4 (L5 only provides ingress service data - L4 renders it).
 - MUST NOT store application secrets in committed files. `.env.example` carries `changeme` placeholders; the operator provides real values in `.env`.
-- MUST NOT import variables from `group_vars/{brain,muscle,local}/` - host-class variables belong to the host, not the app.
+- MUST NOT import variables from `group_vars/{brain,muscle}/` - host-class variables belong to the host, not the app.
 - MUST NOT reference files that do not exist (`compose.yml.j2`, `vars.yml`, `secrets.yml` are not part of the standardized layout).
 
 ### Depends On
@@ -463,7 +460,7 @@ that operators rely on when running applications.
 | `supported_arch` mismatch              | Profile declares arch the target host does not support.                            | Pre-flight arch check. Error: "Host arch 'arm64' not in supported_arch ['amd64']".                 |
 | `changeme` placeholder reaches runtime | Containers start with default/example credentials.                                 | Operator review on deploy; `detect-secrets` scan of `apps/`.                                       |
 | Backup job fails silently              | App data not backed up. Data loss on disk failure.                                 | L3 alert: backup job exit code ≠ 0. Grafana dashboard shows "last backup age" > schedule interval. |
-| App profile references host-class vars | Profile picks up wrong port/firewall config from host group. Cross-layer coupling. | Lint rule: profiles must not import `group_vars/{brain,muscle,local}/` variables.                  |
+| App profile references host-class vars | Profile picks up wrong port/firewall config from host group. Cross-layer coupling. | Lint rule: profiles must not import `group_vars/{brain,muscle}/` variables.                        |
 
 ---
 
