@@ -11,7 +11,7 @@ l1_apt_lock_timeout: 600
 l1_file_mode: "0644"
 
 platform_name: "Developmi Hardened"
-platform_version: "v7.0.0-dev"
+platform_version: "v8.0.0"
 motd_clean_ads: true
 
 systemd_nofile_soft: 1024

@@ -41,7 +41,7 @@
     content: |
       ==============================================================================
       Stack Developmi
-      {{ platform_version | default('v7.0.0-dev') }}
+      {{ platform_version | default('v8.0.0') }}
       ==============================================================================
       Authorized access only. All activities are monitored and logged.
     mode: "0644"
@@ -55,7 +55,7 @@
     content: |
       ******************************************************************************
       *                          DEVELOPMI PLATFORM HARDENED                       *
-      *                               {{ platform_version | default('v7.0.0-dev') }}                                *
+      *                               {{ platform_version | default('v8.0.0') }}                                *
       *                                                                            *
       *  UNAUTHORIZED ACCESS TO THIS SYSTEM IS STRICTLY PROHIBITED BY LAW.         *
       *  ALL CONNECTIONS AND ACTIVITIES ARE LOGGED AND MONITORED.                  *

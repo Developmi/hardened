@@ -3,8 +3,8 @@ title: Development Roadmap
 type: project
 owner: maintainers
 audience: all
-version: v6.0.0-dev
-last-reviewed: 2026-07-23
+version: v8.0.0
+last-reviewed: 2026-11-05
 status: active
 project: developmi-hardened
 repo: github.com/Developmi/hardened
@@ -182,7 +182,7 @@ This project starts at v6.0.0. Prior development history (v1.0.0 - v5.5.0) is ma
 
 ### Planned Release Target
 
-- `v7.0.0` - Policy maturity, scale readiness, and automation infrastructure.
+- `v8.0.0` - Production-ready bare metal & VPS hardening suite with native nftables, unified restic backup engine, decoupled ingress catalog, and zero-trust workstation baseline.
 
 ## Future Implementations (Backlog)
 

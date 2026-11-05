@@ -6,7 +6,7 @@
 
 _A layered infrastructure stack built with Ansible, Docker and Zero Trust principles._
 
-![Version 7.0.0](https://img.shields.io/badge/Version-7.0.0-0A84FF?style=for-the-badge&logo=semver&logoColor=white)
+![Version 8.0.0](https://img.shields.io/badge/Version-8.0.0-0A84FF?style=for-the-badge&logo=semver&logoColor=white)
 ![Python 3.14](https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Ansible Core 2.21.1](https://img.shields.io/badge/Ansible_Core-2.21.1-EE0000?style=for-the-badge&logo=ansible&logoColor=white)
 ![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
@@ -374,6 +374,7 @@ Current quality gates include:
 This project enforces end-to-end quality and compliance verification through a multi-tiered test pipeline spanning static validation, pre-commit hygiene, idempotency checks, and automated role/layer integration testing via **Molecule**:
 
 ### 1. Quality Gates & Linting
+
 Validate syntax, role structure, YAML formatting, and GitHub Actions security workflows locally:
 
 ```bash
@@ -388,6 +389,7 @@ make precommit-run
 ```
 
 ### 2. Integration Testing with Molecule
+
 Automated role and layer testing is executed via [Molecule](https://molecule.readthedocs.io/) using the Docker driver against systemd-enabled Debian 12 (`bookworm`) and Ubuntu 22.04 (`jammy`) containers. Each scenario exercises the complete verification lifecycle (`dependency` → `destroy` → `syntax` → `create` → `prepare` → `converge` → `idempotence` → `verify` → `cleanup` → `destroy`):
 
 ```bash
@@ -403,6 +405,7 @@ make test-layer LAYER=L4_networking
 ```
 
 ### 3. CI/CD & Security Audit Pipelines
+
 - **Pull Request Gates:** [GitHub Actions](.github/workflows/ci.yml) validates playbook syntax, role directories, `ansible-lint`, `yamllint`, `gitleaks` credential scans, and workflow security audits via `zizmor` on every commit.
 - **Security Audit Gates:** A dedicated [security-audit.yml](.github/workflows/security-audit.yml) workflow runs on PRs and release tags (`v*`), executing credential pattern scans, SOPS value leak checks, and dependency vulnerability scans (`uv run pip-audit --path .venv`).
 
