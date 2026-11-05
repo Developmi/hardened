@@ -3,14 +3,14 @@ title: Developer Onboarding
 type: operations
 owner: maintainers
 audience: maintainer
-version: v7.0.0
-last-reviewed: 2026-10-27
+version: v8.0.0
+last-reviewed: 2026-11-05
 status: active
 project: developmi-hardened
 repo: github.com/Developmi/hardened
 ---
 
-# Developer Onboarding - Developmi Hardened v7.0.0
+# Developer Onboarding - Developmi Hardened v8.0.0
 
 5-step developer setup sequence to go from zero to running your first Ansible playbook.
 

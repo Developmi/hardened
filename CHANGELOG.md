@@ -1,6 +1,6 @@
 ---
 title: Changelog
-last_updated: 2026-10-27
+last_updated: 2026-11-05
 owner: TBD
 audience: all
 status: active
@@ -10,21 +10,36 @@ status: active
 
 ## [Unreleased]
 
+## [8.0.0] - 2026-11-05
+
 ### Added
+
+- **Zero Trust Developer Workstation Baseline**: Published `docs/security/DEVELOPER_WORKSTATION_GUIDE.md` establishing a vendor-agnostic Zero Trust client architecture (NIST SP 800-207) with full-disk encryption (FileVault, BitLocker, LUKS), hardware-backed keys (`ed25519-sk`), and MFA-enforced perimeter access.
 - **Deterministic Make Toolchain Contract**: Standardized developer and automation entrypoints with `make doctor`, `make tools`, `make test-security`, and `make release-ready`.
-- **Operational Scale & Sizing Boundaries**: Documented capacity ceilings for Bare Metal / VPS topologies (Brain: 1–3 High-Spec, 3–5 Low-Spec; Muscle: 50–100 workers) prior to hyperscale K8s orchestration.
+- **Operational Scale & Sizing Boundaries**: Documented capacity ceilings for Bare Metal / VPS topologies (Brain: 1–3 High-Spec, 3–5 Low-Spec; Muscle: 50–100 workers) prior to hyperscale K8s orchestration in `docs/architecture/ARCHITECTURE.md`.
+- **Automated Tailscale Serve UI Activation**: Integrated dynamic Tailscale Serve activation for Caddy WAF UI based on host group membership (`muscle`), eliminating per-host variable configuration.
 
 ### Changed
+
+- **Unified NFTables Firewall Engine (Breaking)**: Standardized entire cluster exclusively on native `nftables`, completely purging legacy `ufw` and iptables wrappers across L1 OS baseline and L2 compliance. Added strict Molecule TDD assertions verifying `ufw` package removal and active `nftables.service`.
 - **Ingress & Secrets Decoupling**: Decoupled `ingress_services` catalog from SOPS encryption into tracked `ingress.yml.example` and gitignored `ingress.yml` to prevent merge conflict friction and protect client domain confidentiality without encrypting non-secret routing topology.
 - **Unified Caddyfile SSOT**: Removed `.example.j2` copy requirement in favor of a single tracked `Caddyfile.j2` incorporating global `metrics` directive aligned with upstream.
 - **Upstream Caddy WAF Upgrade**: Pinned `ghcr.io/developmi/caddy-waf:v3.6.2` (Coraza v3.8.1, CRS v4) with cryptographic multi-arch sha256 digest validation.
+- **Tailscale Configuration Centralization**: Consolidated Tailscale variables strictly under `inventory/group_vars/all/tailscale.yml` and SOPS secrets, eliminating redundant per-host overrides.
+
+### Removed
+
+- **Local Endpoint Hardening & Pop!\_OS Conditioning (Breaking)**: Completely purged `playbooks/ops/local-devices.yml` (-596 lines), `make deploy-local` target, `[local]` inventory groups, and Pop!\_OS desktop normalization hacks (`_os_family`) across Docker, Tailscale, and firewall rules in accordance with YAGNI and server-only scope.
 
 ### Fixed
+
 - **Preflight Toolchain Compliance**: Replaced legacy `pip` reference in roadmap with `uv tool run` and documented upstream container entrypoint requirement in Twenty CRM compose worker.
+- **Ansible Facts Consistency**: Standardized `ansible_date_time` references in Caddy roles to prevent undefined variable evaluations under gathered facts.
 
 ## [7.0.0] - 2026-10-27
 
 ### Added
+
 - **Platform Hardening v2**:
   - Configured post-quantum SSH key exchange algorithms (`sntrup761x25519-sha512@openssh.com`) alongside strict Curve25519 primitives.
   - Implemented passwordless `sudo` privileges scoped strictly to `dev_admin`.
@@ -55,6 +70,7 @@ status: active
   - Native Makefile targets: `sops-init`, `sops-edit`, `sops-encrypt`, and `sops-view`.
 
 ### Changed
+
 - **Toolchain Modernization**: Upgraded runtime floor to Python `>=3.14`, pinned `ansible-core==2.21.1`, and aligned `ansible-lint==26.6.0`.
 - **Backup Stack Pinning**: Pinned Restic binary and container image to `0.19.1` with per-architecture sha256 verification on AMD64 and ARM64.
 - **CI/CD Hardening**:
@@ -64,12 +80,14 @@ status: active
   - Pinned Gitleaks scanner to license-safe release `v8.23.3` with verified SHA256 checksums.
 
 ### Security
+
 - **Supply Chain Vulnerability Eradication**:
   - Regenerated lockfile dependencies (`uv.lock`) resolving 17 known vulnerabilities (1 CRITICAL, 6 HIGH) across transitive dependencies (`certifi`, `black`, `filelock`, `virtualenv`).
   - Integrated `pip-audit==2.10.1` into `dev` dependency group and aligned local validation with GitHub Actions (`uv run pip-audit --path .venv`).
   - Enforced pre-commit and CI secrets scanning baseline to guarantee zero plaintext credentials or unencrypted `.sops.yml` files enter version control.
 
 ### Removed
+
 - Retired legacy `backup-db` role in favor of the unified L6 backup engine.
 - Purged dead and orphaned secrets from templates and inventories (`portainer_url`, `portainer_username`, `portainer_password`, redundant observability network keys).
 - Eliminated legacy unpinned `uvx` invocations in security workflows.

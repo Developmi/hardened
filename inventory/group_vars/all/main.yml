@@ -1,7 +1,7 @@
 ---
 # Platform metadata
 platform_name: "Developmi Hardened"
-platform_version: "v7.0.0-dev"
+platform_version: "v8.0.0"
 
 # Shared external Docker network (L3 observability stack, L4 caddy, L6 portainer)
 shared_network_name: "public_net"

@@ -3,8 +3,8 @@ title: Release Procedure
 type: project
 owner: maintainers
 audience: maintainer
-version: v7.0.0
-last-reviewed: 2026-10-27
+version: v8.0.0
+last-reviewed: 2026-11-05
 status: active
 project: developmi-hardened
 repo: github.com/Developmi/hardened
@@ -12,7 +12,7 @@ repo: github.com/Developmi/hardened
 
 # Release Procedure
 
-Current latest release: `v7.0.0` (see [CHANGELOG.md](../../CHANGELOG.md) for the full history).
+Current latest release: `v8.0.0` (see [CHANGELOG.md](../../CHANGELOG.md) for the full history).
 
 This document defines the standard process for all future releases.
 
