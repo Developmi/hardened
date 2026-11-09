@@ -16,7 +16,7 @@ repo: github.com/Developmi/hardened
 
 This document tracks cost estimation and financial governance across the Developmi Hardened.
 It establishes a per-node cost baseline for OpenSource-scoped layers (L1–L6), documents the
-boundary with private cloud provisioning costs (L0), and references the Nuntu field case study
+boundary with private cloud provisioning costs (L0), and references the sovereign migration field case study
 for aggregate OpEx comparison.
 
 **Scope rule:** L0 cloud provisioning costs are private and explicitly excluded from this
@@ -78,16 +78,14 @@ and incur no platform cost.
 
 ## Case Study Summary
 
-> Source: [README.md](../../README.md) - FinOps Case Study (Nuntu)
+> Source: [README.md](../../README.md) - FinOps Field Case Study
 
-| Metric                 | Before (SaaS Sprawl) | After (Sovereign Self-Hosted)  | Impact                     |
-| ---------------------- | -------------------- | ------------------------------ | -------------------------- |
-| Annual Software OpEx   | $X (baseline)        | $0.3X                          | **-70%**                   |
-| Platform Uptime (Prod) | ~99.5%               | 99.8%                          | Higher reliability         |
-| Data Sovereignty       | 0%                   | 100%                           | Full control               |
-| WAF Efficacy           | N/A                  | >99% block, <1% false positive | Enterprise-grade perimeter |
-| Incident Response Time | Hours/Days           | Minutes                        | Stronger resilience        |
-| Vendor Risk            | Critical             | Negligible                     | Supply-chain risk reduced  |
+| Metric                 | Before (SaaS Sprawl) | After (Sovereign Self-Hosted) | Impact                    |
+| ---------------------- | -------------------- | ----------------------------- | ------------------------- |
+| Annual Software OpEx   | $X (baseline)        | $0.3X                         | **-70%**                  |
+| Platform Uptime (Prod) | ~99.5%               | 99.8%                         | Higher reliability        |
+| Data Sovereignty       | 0%                   | 100%                          | Full control              |
+| Vendor Risk            | Critical             | Negligible                    | Supply-chain risk reduced |
 
 This is a field implementation narrative, not a vendor benchmark. Results depend on workload,
 architecture, and governance discipline.
@@ -102,7 +100,7 @@ Update this document when any of the following occur:
 2. **Provider change** shifts the VPS-equivalent pricing tiers (e.g., ARM64 Ampere nodes change the cost floor).
 3. **Significant price change** in the self-hosted stack components (Docker, Caddy, PostgreSQL, etc.).
 4. **New layer** or role added that materially affects compute, storage, or network cost.
-5. **Case study refresh** - new field data from additional migrations or expanded Nuntu fleet.
+5. **Case study refresh** - new field data from additional migrations or expanded fleet.
 
 To update:
 
@@ -114,13 +112,13 @@ To update:
 
 | Date       | Change                                                                           |
 | ---------- | -------------------------------------------------------------------------------- |
-| 2026-07-05 | Initial baseline: per-node table, L0/L1-L6 separation, Nuntu case study summary. |
+| 2026-07-05 | Initial baseline: per-node table, L0/L1-L6 separation, field case study summary. |
 
 ---
 
 ## Cross-References
 
-- [README.md](../../README.md) - FinOps Case Study (Nuntu) with aggregate before/after metrics
+- [README.md](../../README.md) - FinOps Field Case Study with aggregate before/after metrics
 - [ARCHITECTURE.md](../architecture/ARCHITECTURE.md) - §5 L0/L1–L6 scope separation and trust boundaries; §7 host classes (brain/muscle/local)
 - [ROADMAP.md](../project/ROADMAP.md) - FinOps Specialist role
 - [ARCHITECTURE.md §5](../architecture/ARCHITECTURE.md#5-7-layer-architecture-model-full-specification) - Layer model (L0-L6) reference.

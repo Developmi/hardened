@@ -30,7 +30,7 @@ _A layered infrastructure stack built with Ansible, Docker and Zero Trust princi
 - [Overview](#overview)
 - [Features](#features)
 - [Value Snapshot for CTO/CFO](#value-snapshot-for-ctocfo)
-- [FinOps Case Study (Nuntu)](#finops-case-study-nuntu)
+- [FinOps Field Case Study](#finops-field-case-study)
 - [Field Validation Evidence](#field-validation-evidence)
 - [Compliance & Standards](#compliance--standards)
 - [Quick Start](#quick-start)
@@ -65,10 +65,10 @@ The project aligns to **NIST 800-53** controls and emphasizes secrets handling, 
 
 ## Features
 
-- 🛡️ **Security-first hardening** with SSH restrictions, firewall controls, audit logging, CrowdSec integration, and Vault-backed secrets.
+- 🛡️ **Security-first hardening** with SSH restrictions, firewall controls, audit logging, CrowdSec integration, and SOPS + age encrypted secrets.
 - 🔐 **Zero-trust networking** through Tailscale ACL-driven access and minimized public exposure.
 - 🧱 **Modular architecture** using Ansible roles for security, Docker orchestration, observability, compliance, ingress, and Portainer edge operations.
-- 📦 **Optional application bundles** for Chatwoot, Metabase, n8n, OpenWebUI, Twenty CRM, and Uptime Kuma.
+- 📦 **Optional application bundles** for Chatwoot, Metabase, n8n, NocoDB, OpenWebUI, Twenty CRM, Uptime Kuma, and FastAPI (community template).
 - 📈 **Operational visibility** with exporter and observability stack support when capacity allows.
 - 🧪 **Validation gates** executed through Make targets (uv-backed) for linting, syntax checks, and secret scanning.
 - 🧭 **Documented operating model** with commands centralized in `docs/operations/OPERATIONS_RUNBOOK.md`.
@@ -87,9 +87,9 @@ In less than 30 seconds:
 
 ---
 
-## FinOps Case Study (Nuntu)
+## FinOps Field Case Study
 
-This project pattern has been applied to a real-world migration scenario (codenamed **Nuntu**) focused on sovereignty, security, and OpEx reduction.
+This project pattern has been applied to a real-world sovereign cloud-exit migration scenario focused on data sovereignty, security, and OpEx reduction.
 
 ### Business problem
 
@@ -106,14 +106,12 @@ This project pattern has been applied to a real-world migration scenario (codena
 
 ### Measured outcomes (reported case)
 
-| Metric                 | Before (SaaS Sprawl) | After (Sovereign Self-Hosted)        | Impact                     |
-| ---------------------- | -------------------- | ------------------------------------ | -------------------------- |
-| Annual Software OpEx   | $X (baseline)        | $0.3X                                | **-70%**                   |
-| Platform Uptime (Prod) | ~99.5%               | 99.8%                                | Higher reliability         |
-| Data Sovereignty       | 0%                   | 100%                                 | Full control               |
-| WAF Efficacy           | N/A                  | >99% block rate, <1% false positives | Enterprise-grade perimeter |
-| Incident Response Time | Hours/Days           | Minutes                              | Stronger resilience        |
-| Vendor Risk            | Critical             | Negligible                           | Supply-chain risk reduced  |
+| Metric                 | Before (SaaS Sprawl) | After (Sovereign Self-Hosted) | Impact                    |
+| ---------------------- | -------------------- | ----------------------------- | ------------------------- |
+| Annual Software OpEx   | $X (baseline)        | $0.3X                         | **-70%**                  |
+| Platform Uptime (Prod) | ~99.5%               | 99.8%                         | Higher reliability        |
+| Data Sovereignty       | 0%                   | 100%                          | Full control              |
+| Vendor Risk            | Critical             | Negligible                    | Supply-chain risk reduced |
 
 > **Scope note:** This case study is a field implementation narrative and not a vendor benchmark report. Results depend on workload, architecture, and governance discipline.
 
@@ -121,12 +119,11 @@ This project pattern has been applied to a real-world migration scenario (codena
 
 ## Field Validation Evidence
 
-Current documented execution evidence in this repository corresponds to a lab/staging scope with:
+The platform architecture and hardening suite are **Production Ready**, validated across active production operations and staged topologies:
 
-- **1 Brain node**
-- **2 Muscle nodes**
-
-This is intentionally presented as operational proof-of-execution while broader fleet rollouts are scheduled.
+- **Production Reference Fleet**: 1 Management Node (`brain-1`) + 1 Compute Worker Node (`muscle-1`) in active operation.
+- **Multi-Node Staging & Lab Validation**: Multi-node cluster topology validated across 1 Brain + 2 Muscle nodes.
+- **Automated Verification**: Multi-layer Molecule verification suite (`L1_os_baseline`, `L2_compliance`, `L3_observability`, `L4_networking`, `backup`) tested on Debian 12 (`bookworm`) and Ubuntu 22.04 (`jammy`).
 
 ### Deployment proof screenshots
 
