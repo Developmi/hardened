@@ -89,7 +89,7 @@
   tags: [tailscale, l2-compliance, acl, security]
 
   tasks:
-    - name: "Configure Tailscale ACLs (Zero Trust Network Policies)"
+    - name: "Configure Tailscale ACLs (Private Mesh Network Policies)"
       when:
         - groups['brain'] is defined
         - groups['brain'] | length > 0

@@ -155,7 +155,7 @@ deploy-bootstrap: ## First-deploy host bootstrap [CONTROLLER_IP=x.x.x.x]
 	$(ANSIBLE_RUN) playbooks/site.yml $(ANSIBLE_FLAGS) -e bootstrap_mode=true $${EXTRA_E}
 
 deploy-hardening: ## Deploy full OS hardening L1+L2 (site.yml) [TARGET=<host>]
-	@echo "=== Full Hardening (L1 Baseline + L2 Compliance/Zero Trust) ==="
+	@echo "=== Full Hardening (L1 Baseline + L2 Compliance/Private Mesh) ==="
 	$(ANSIBLE_RUN) playbooks/site.yml $(ANSIBLE_FLAGS)
 
 deploy-engine: ## Deploy hardened Docker Engine runtime (L6) [TARGET=<host>]

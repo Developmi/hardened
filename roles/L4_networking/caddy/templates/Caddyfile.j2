@@ -202,7 +202,7 @@
     respond @sensitive_paths "Forbidden" 403
 }
 
-# ── Zero Trust VPN restriction ────────────────────────────────────────
+# ── Private Mesh VPN restriction ──────────────────────────────────────
 (vpn_only) {
     @denied_vpn {
         not remote_ip {{ tailscale_subnet }} 127.0.0.1/8 ::1

@@ -5,7 +5,7 @@
 # Performs an audited, graceful reboot of managed hosts with serial: 1
 # to prevent cluster downtime. Automatically polls the host until SSH
 # is responsive, applies post-reboot settle delay, and verifies critical
-# system daemons, Zero Trust connectivity, and running containers.
+# system daemons, private mesh connectivity, and running containers.
 # ==============================================================================
 
 - name: "Ops | Controlled Rolling Reboot"
