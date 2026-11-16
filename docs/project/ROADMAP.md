@@ -27,8 +27,8 @@ This project starts at v6.0.0. Prior development history (v1.0.0 - v5.5.0) is ma
 - NIST-focused architecture remains consistent (`AC-2`, `CM-7`, `SC-7`, `SI-4`, `AU-12`, `SC-28` audit scope).
 - Security stack is cohesive: SSH hardening, UFW/fail2ban, CrowdSec, Tailscale, SOPS + age secrets workflow.
 - Operational playbooks (`playbooks/l6/engine.yml`, `playbooks/l3/exporters.yml`, `playbooks/ops/nuke.yml`) enforce Tailscale-only transport via `tailscale_subnet` source-of-truth variable.
-- Observability deployment is fully automated end-to-end via Ansible and SOPS-encrypted secrets.
-- Recommended app catalog now provides secure, Zero Trust-aligned deployment configurations for Chatwoot, Metabase, n8n, OpenWebUI, Twenty CRM, and Uptime Kuma.
+- Observability deployment is automated end-to-end via Ansible and SOPS-encrypted secrets.
+- Recommended app catalog now provides secure, private mesh-aligned deployment configurations for Chatwoot, Metabase, n8n, OpenWebUI, Twenty CRM, and Uptime Kuma.
 - **Caddy Node Isolation (v5.4.0)**: Per-node Caddyfile routing via `target_group ∩ group_names`. Three-layer variable model: SOPS (domains, certs, per-service `waf_mode`), inventory inline vars (`caddy_node_id` per host), group_vars (`caddy_type`, `caddy_admin_enabled` defaults). The legacy per-host `caddy_coraza_mode` was removed — nothing consumed it.
 - **Caddy WAF v3.2.1 Alignment (NEW)**: WAF upgraded from pinned v2 to Coraza v2.5.0 / OWASP CRS v4.28.0. WAF config (coraza.conf, CRS rules) now baked into container image at `/etc/caddy/`. Role no longer deploys host-side WAF config - just renders Caddyfile with correct snippet paths and validates per-service `waf_mode`. Healthcheck aligned to `pgrep caddy`. compose.yml.j2 streamlined (removed dead WAF bind mounts).
 - **APT Lock Detection (v5.3.0)**: Pre-flight lock detection using `fuser`/`pgrep` with auto-kill for stale processes (>15min) and `apt_force_cleanup=true` flag for deadlocked processes. Enhanced in v6.0.0-dev with stale lock file cleanup (empty/abandoned locks) and `changed_when: false` for idempotent runs.
@@ -182,7 +182,7 @@ This project starts at v6.0.0. Prior development history (v1.0.0 - v5.5.0) is ma
 
 ### Planned Release Target
 
-- `v8.0.0` - Production-ready bare metal & VPS hardening suite with native nftables, unified restic backup engine, decoupled ingress catalog, and zero-trust workstation baseline.
+- `v8.0.0` - Bare metal & VPS hardening suite (validated scope in README) with native nftables, unified restic backup engine, decoupled ingress catalog, and private mesh workstation baseline.
 
 ## Future Implementations (Backlog)
 
@@ -196,7 +196,7 @@ This project starts at v6.0.0. Prior development history (v1.0.0 - v5.5.0) is ma
 - [ ] Replace `pre-commit/mirrors-prettier` (archived mirror) with official Prettier distribution from `prettier/prettier` (MIT) via pinned `pnpm` execution in hooks (policy: no npm).
 - **Completed**: secrets lifecycle migrated from the transitional `ansible-vault` wrapper to the official and auditable key-management baseline (Mozilla SOPS + age/GPG), including key custody, rotation, and recovery controls. Remaining `ansible-vault` usage is limited to the Tailscale trio until gate D4 (OPERATIONS_RUNBOOK §7.4).
 - [ ] Support for advanced host metrics (`network_mode: host`) with dedicated segmentation, compensating controls, and NIST/CIS exception documentation.
-- [ ] Improve cAdvisor zero-trust coverage on hardened Docker hosts (`userns-remap`) with explicit metric-tier profiles (strict, balanced, full) and documented tradeoffs per profile.
+- [ ] Improve cAdvisor private mesh coverage on hardened Docker hosts (`userns-remap`) with explicit metric-tier profiles (strict, balanced, full) and documented tradeoffs per profile.
 - [ ] Add optional per-node cAdvisor enablement in inventory/group vars so hardened nodes can run Node Exporter only while keeping centralized scrape configuration clean.
 - [ ] Rename `tailscale_subnet` to a VPN-agnostic overlay variable (e.g. `management_overlay_subnet`) to support non-Tailscale overlays (Headscale, WireGuard, etc.) without requiring changes across multiple playbooks. `tailscale_subnet` would remain as an alias for backwards compatibility. Relevant controls: NIST `CM-6`, `SC-7`.
 - [ ] **Coraza full activation checklist**: After OWASP CRS tuning period on muscle nodes (DetectionOnly), documented activation procedure with per-service WAF bypass audit, false-positive triage runbook, and gradual rollout plan (muscle-1 → muscle-2 → all workers).
@@ -243,7 +243,7 @@ Key v2 themes relevant to this roadmap:
 
 ---
 
-Maintained by Miguel Lozano - Cloud Infrastructure Engineer & FinOps Specialist
+Maintained by Miguel Lozano - Infrastructure & DevSecOps Consultant
 Last updated: 2026-07-23
 
 ## Related Documents

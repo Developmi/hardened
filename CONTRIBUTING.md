@@ -6,9 +6,9 @@ audience: contributor
 status: complete
 ---
 
-# Contributing to NIST-Compliant Hardening Suite
+# Contributing to Developmi Hardened
 
-Thank you for your interest in contributing to the NIST-Compliant Hardening Suite! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to Developmi Hardened! This document provides guidelines and instructions for contributing.
 
 ## Code of Conduct
 

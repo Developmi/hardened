@@ -18,7 +18,7 @@ This folder centralizes project documentation by objective and operational domai
 
 ## Quick Start
 
-The Developmi Hardened is an enterprise-grade Ansible hardening framework for NIST-aligned Debian and Ubuntu infrastructure. If you're new:
+The Developmi Hardened is an Ansible hardening framework mapped to NIST 800-53 for Debian 12 and Ubuntu 22.04 infrastructure. If you're new:
 
 - **I want to run this suite** → Start with the [root README](../README.md), then [OPERATIONS_RUNBOOK.md](operations/OPERATIONS_RUNBOOK.md)
 - **I want to contribute** → Start with [CONTRIBUTING.md](../CONTRIBUTING.md)

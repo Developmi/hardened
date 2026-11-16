@@ -10,6 +10,10 @@ status: active
 
 ## [Unreleased]
 
+### Changed
+
+- Documentation: validation scope rewritten (production on up to 2 Brain and 10 Muscle nodes; 3 Brain / 30 Muscle scale test in progress), supported systems restricted to Debian 12 and Ubuntu 22.04, standards described as "mapped to" instead of "compliant", Tailscale described as a private mesh, and README closing sections reordered.
+
 ## [8.0.0] - 2026-11-05
 
 ### Added

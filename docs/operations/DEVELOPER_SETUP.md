@@ -115,12 +115,12 @@ ssh <target-host> "sysctl kernel.kptr_restrict"
 
 ## Common Issues
 
-| Issue                           | Resolution                                                           |
-| ------------------------------- | -------------------------------------------------------------------- |
-| `ansible-core` version mismatch | `uv sync --reinstall-package ansible-core`                           |
-| SOPS age key not found          | Ensure `~/.config/sops/age/keys.txt` exists (see Step 3)             |
-| SSH connection refused          | Target host must have SSH enabled. Verify with `ssh <host> echo ok`  |
-| `uv sync` fails on ARM64        | ARM64 is fully supported. Ensure Python 3.14+ is installed for ARM64 |
+| Issue                           | Resolution                                                          |
+| ------------------------------- | ------------------------------------------------------------------- |
+| `ansible-core` version mismatch | `uv sync --reinstall-package ansible-core`                          |
+| SOPS age key not found          | Ensure `~/.config/sops/age/keys.txt` exists (see Step 3)            |
+| SSH connection refused          | Target host must have SSH enabled. Verify with `ssh <host> echo ok` |
+| `uv sync` fails on ARM64        | ARM64 is supported. Ensure Python 3.14+ is installed for ARM64      |
 
 ---
 

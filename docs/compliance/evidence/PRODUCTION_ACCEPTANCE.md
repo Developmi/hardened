@@ -12,7 +12,7 @@ repo: github.com/Developmi/hardened
 
 # Production Acceptance | Developmi Hardened
 
-Acceptance gates that must pass before the platform is considered production-ready. Each gate has explicit pass/fail criteria, a verification method, and a responsible role.
+Acceptance gates that must pass before the platform is considered validated for production. Each gate has explicit pass/fail criteria, a verification method, and a responsible role.
 
 ---
 
