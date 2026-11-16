@@ -32,7 +32,7 @@
 #   - Protected paths are never deleted.
 #   - Nuke is blocked for hosts in inventory group 'production'.
 #   - Remote connectivity always respects inventory 'ansible_host'.
-#   - In a Zero Trust setup, nuke/stacks operations must run over Tailscale.
+#   - In a private mesh setup, nuke/stacks operations must run over Tailscale.
 # ==============================================================================
 
 - name: Nuke Developmi Hardened managed infrastructure

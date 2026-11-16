@@ -18,7 +18,7 @@
     that:
       - 2019 not in allowed_ports
       - 2020 not in allowed_ports
-    fail_msg: "CRITICAL: Caddy admin API (2019) / Prometheus API (2020) found in allowed_ports. These control-plane ports are denied on all interfaces (zero-trust, contract §6/M1)."
+    fail_msg: "CRITICAL: Caddy admin API (2019) / Prometheus API (2020) found in allowed_ports. These control-plane ports are denied on all interfaces (private mesh)."
   tags: [l2-hardening]
 
 # ponytail: nf_conntrack may not be auto-loaded on minimal installs,
@@ -102,11 +102,10 @@
               tcp dport {{ port }} accept
               {% endfor %}
 
-              # Deny Caddy admin + Prometheus API on ALL interfaces (zero-trust).
+              # Deny Caddy admin + Prometheus API on ALL interfaces (private mesh).
               # Must precede the Docker bridge accept below: it closes the
               # container -> host path to a host-bound 0.0.0.0:2019 admin API
               # (systemd/bare-metal deployments). The admin API accepts config
-              # POSTs (contract §6/M1).
               tcp dport { 2019, 2020 } drop
 
               # Docker bridge internal

@@ -1,12 +1,12 @@
 ---
 # ==============================================================================
-# OVERLAY PRE-FLIGHT - Zero Trust transport check (SSOT)
+# OVERLAY PRE-FLIGHT - Private mesh transport check (SSOT)
 # ==============================================================================
 # Reusable include for l3/l6/ops playbook pre_tasks.
 #
 # WHY THIS FILE EXISTS:
 #   This assert was previously copy-pasted (with drift) across 7 playbooks.
-#   It lives here so every playbook validates the exact same Zero Trust
+#   It lives here so every playbook validates the exact same private mesh
 #   invariant: ansible_host MUST be a Tailscale overlay IP inside
 #   tailscale_subnet. Public bootstrap access is only permitted in site.yml.
 #
@@ -32,7 +32,7 @@
           ~ (tailscale_subnet | quote)
         ) == 'True'
     fail_msg: >-
-      Zero Trust violation on {{ inventory_hostname }}: this playbook only allows
+      Private mesh violation on {{ inventory_hostname }}: this playbook only allows
       connections through the management overlay using ansible_host inside
       {{ tailscale_subnet }}. Public bootstrap access is only permitted in site.yml.
     success_msg: >-

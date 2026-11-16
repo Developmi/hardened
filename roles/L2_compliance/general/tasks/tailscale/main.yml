@@ -12,7 +12,7 @@
 # Validate required secrets and input formats
 # ------------------------------------------------------------------------------
 
-- name: Enforce Tailscale ACL OAuth secret presence (Zero Trust requirement)
+- name: Enforce Tailscale ACL OAuth secret presence (Private Mesh requirement)
   ansible.builtin.assert:
     that:
       - tailscale_acl_key is defined
