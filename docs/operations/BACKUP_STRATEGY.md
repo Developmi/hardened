@@ -18,7 +18,7 @@ Two-layer backup architecture for the Developmi Hardened platform, covering appl
 
 > ## ⚠️ Tier3 is out of scope (TIER-004)
 >
-> The backup engine covers **Tier1** (guaranteed, image-discovered databases) and
+> The backup engine covers **Tier1** (standard, image-discovered databases) and
 > **Tier2** (opt-in volumes declared in `backup.volumes[]`). **Tier3** is
 > explicitly **out of scope**: custom application configuration, arbitrary bind
 > mounts, and source/CI artifacts are **not** protected by the engine and it MUST

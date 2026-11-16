@@ -63,3 +63,7 @@ Each role dispatches to the correct backend:
 
 - [../ARCHITECTURE.md](../ARCHITECTURE.md) - OS Support Matrix, AMD64/ARM64 compatibility
 - [../LAYER_BOUNDARIES.md](../LAYER_BOUNDARIES.md) - L1 OS Baseline contract
+
+---
+
+Amendment (2026-11-16): scope narrowed to Debian 12 and Ubuntu 22.04.

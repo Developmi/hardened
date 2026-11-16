@@ -80,15 +80,14 @@ and incur no platform cost.
 
 > Source: [README.md](../../README.md) - FinOps Field Case Study
 
-| Metric                 | Before (SaaS Sprawl) | After (Sovereign Self-Hosted) | Impact                    |
-| ---------------------- | -------------------- | ----------------------------- | ------------------------- |
-| Annual Software OpEx   | $X (baseline)        | $0.3X                         | **-70%**                  |
-| Platform Uptime (Prod) | ~99.5%               | 99.8%                         | Higher reliability        |
-| Data Sovereignty       | 0%                   | 100%                          | Full control              |
-| Vendor Risk            | Critical             | Negligible                    | Supply-chain risk reduced |
+| Metric                 | Before (SaaS Sprawl) | After (Sovereign Self-Hosted)           | Impact                    |
+| ---------------------- | -------------------- | --------------------------------------- | ------------------------- |
+| Annual Software OpEx   | $X (baseline)        | $0.3X                                   | **-70%**                  |
+| Platform Uptime (Prod) | ~99.5%               | 99.8%                                   | Higher reliability        |
+| Data Sovereignty       | Third-party hosted   | Self-hosted on dedicated infrastructure | Direct control            |
+| Vendor Risk            | Critical             | Reduced                                 | Supply-chain risk reduced |
 
-This is a field implementation narrative, not a vendor benchmark. Results depend on workload,
-architecture, and governance discipline.
+> **Scope note:** This case study is a field implementation narrative and not a vendor benchmark report. Results depend on workload, architecture, and governance discipline. Figures come from the reported case; supporting records are not published in this repository.
 
 ---
 

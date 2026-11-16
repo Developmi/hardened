@@ -4,52 +4,78 @@
 
 # Developmi Hardened
 
-_A layered infrastructure stack built with Ansible, Docker and Zero Trust principles._
+_A layered infrastructure stack built with Ansible, Docker and private mesh access._
 
 ![Version 8.0.0](https://img.shields.io/badge/Version-8.0.0-0A84FF?style=for-the-badge&logo=semver&logoColor=white)
 ![Python 3.14](https://img.shields.io/badge/Python-3.14-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Ansible Core 2.21.1](https://img.shields.io/badge/Ansible_Core-2.21.1-EE0000?style=for-the-badge&logo=ansible&logoColor=white)
 ![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Standard NIST 800-53](https://img.shields.io/badge/Standard-NIST_800--53-0B5CAD?style=for-the-badge)
-![Status Production Ready](https://img.shields.io/badge/Status-Production_Ready-brightgreen?style=for-the-badge)
+![Mapped to NIST 800-53](https://img.shields.io/badge/Mapped_to-NIST_800--53-0B5CAD?style=for-the-badge)
+![Status: production (validated scope below)](<https://img.shields.io/badge/Status-production_(validated_scope_below)-brightgreen?style=for-the-badge>)
 ![License MIT](https://img.shields.io/badge/License-MIT_©-blue?style=for-the-badge)
 ![CI GitHub Actions](https://img.shields.io/badge/CI-GitHub_Actions-blue?style=for-the-badge&logo=githubactions&logoColor=white)
 ![Maintainer Miguel Lozano](https://img.shields.io/badge/Maintainer-Miguel_Lozano-black?style=for-the-badge)
-![Role Cloud & Infrastructure Engineer](https://img.shields.io/badge/Role-Cloud_%26_Infrastructure_Engineer-black?style=for-the-badge)
+![Role Infrastructure & DevSecOps Consultant](https://img.shields.io/badge/Role-Infrastructure_%26_DevSecOps_Consultant-black?style=for-the-badge)
 
 </div>
 
-> **The script is free. Peace of mind is not.**
+> **Status:** production (validated scope below)
 >
-> This repository delivers a reproducible hardening baseline, zero-trust access patterns, and optional containerized application bundles for managed infrastructure.
+> This repository provides a reproducible hardening baseline, private mesh access patterns and optional containerized application bundles.
 
 ---
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Features](#features)
-- [Value Snapshot for CTO/CFO](#value-snapshot-for-ctocfo)
-- [FinOps Field Case Study](#finops-field-case-study)
-- [Field Validation Evidence](#field-validation-evidence)
-- [Compliance & Standards](#compliance--standards)
-- [Quick Start](#quick-start)
-- [Operations with Make](#operations-with-make)
-- [Architecture](#architecture)
-- [Docker & Deployment](#docker--deployment)
-- [Configuration & Secrets](#configuration--secrets)
-- [Validation & Quality Gates](#validation--quality-gates)
-- [Tests](#-tests)
-- [Security](#-security)
-- [Changelog](#-changelog)
-- [Contributing](#-contributing)
-- [License](#-license)
-- [Documentation Guide](#documentation-guide)
-- [Contact & Support](#contact--support)
+- [Developmi Hardened](#developmi-hardened)
+  - [Table of Contents](#table-of-contents)
+  - [🎯 Overview](#-overview)
+  - [✨ Features](#-features)
+  - [💼 Value Snapshot for CTO/CFO](#-value-snapshot-for-ctocfo)
+  - [💰 FinOps Field Case Study](#-finops-field-case-study)
+    - [Business problem](#business-problem)
+    - [Implemented approach](#implemented-approach)
+    - [Measured outcomes (reported case)](#measured-outcomes-reported-case)
+  - [✅ Validation Scope](#-validation-scope)
+    - [Tested](#tested)
+    - [Not tested or not confirmed](#not-tested-or-not-confirmed)
+    - [Deployment proof screenshots](#deployment-proof-screenshots)
+  - [📚 Compliance \& Standards](#-compliance--standards)
+    - [Primary control coverage](#primary-control-coverage)
+    - [Where to audit compliance details](#where-to-audit-compliance-details)
+  - [⚡ Quick Start](#-quick-start)
+    - [Prerequisites](#prerequisites)
+    - [Setup](#setup)
+    - [Inventory](#inventory)
+    - [Secrets](#secrets)
+    - [Deploy](#deploy)
+  - [🛠️ Operations with Make](#️-operations-with-make)
+    - [High-frequency operator commands](#high-frequency-operator-commands)
+    - [Advanced and safety workflows](#advanced-and-safety-workflows)
+  - [🏗️ Architecture](#️-architecture)
+    - [Simplified Tree](#simplified-tree)
+    - [Execution Flow](#execution-flow)
+  - [🐳 Docker \& Deployment](#-docker--deployment)
+    - [Deploy Applications](#deploy-applications)
+    - [Security Notes](#security-notes)
+  - [🔧 Configuration \& Secrets](#-configuration--secrets)
+    - [Core Secrets Template](#core-secrets-template)
+    - [Optional Observability Values](#optional-observability-values)
+    - [App Configuration](#app-configuration)
+  - [🧪 Tests](#-tests)
+    - [1. Quality Gates \& Linting](#1-quality-gates--linting)
+    - [2. Integration Testing with Molecule](#2-integration-testing-with-molecule)
+    - [3. CI/CD \& Security Audit Pipelines](#3-cicd--security-audit-pipelines)
+  - [📖 Documentation](#-documentation)
+  - [🔒 Security](#-security)
+  - [📋 Changelog](#-changelog)
+  - [🤝 Contributing](#-contributing)
+  - [📄 License](#-license)
+  - [📬 Contact \& Support](#-contact--support)
 
 ---
 
-## Overview
+## 🎯 Overview
 
 Developmi Hardened is an Ansible-based infrastructure automation project focused on establishing a secure, auditable, and repeatable baseline across mixed-host environments.
 
@@ -59,14 +85,14 @@ It is designed to standardize the security posture of:
 - **Muscle nodes** for workload execution and optional edge services.
 - **Application stacks** under `apps/` are operator-managed and deploy first-class via native Docker Compose (`git pull` + `docker compose up` on `public_net`); Portainer (Edge agent) is an optional manager when `enable_portainer: true` (ADR-07).
 
-The project aligns to **NIST 800-53** controls and emphasizes secrets handling, least privilege, hardened networking, and operational repeatability.
+The project is mapped to **NIST 800-53** controls and emphasizes secrets handling, least privilege, hardened networking, and operational repeatability.
 
 ---
 
-## Features
+## ✨ Features
 
 - 🛡️ **Security-first hardening** with SSH restrictions, firewall controls, audit logging, CrowdSec integration, and SOPS + age encrypted secrets.
-- 🔐 **Zero-trust networking** through Tailscale ACL-driven access and minimized public exposure.
+- 🔐 **Private mesh networking** through Tailscale ACL-driven access and minimized public exposure.
 - 🧱 **Modular architecture** using Ansible roles for security, Docker orchestration, observability, compliance, ingress, and Portainer edge operations.
 - 📦 **Optional application bundles** for Chatwoot, Metabase, n8n, NocoDB, OpenWebUI, Twenty CRM, Uptime Kuma, and FastAPI (community template).
 - 📈 **Operational visibility** with exporter and observability stack support when capacity allows.
@@ -75,19 +101,19 @@ The project aligns to **NIST 800-53** controls and emphasizes secrets handling, 
 
 ---
 
-## Value Snapshot for CTO/CFO
+## 💼 Value Snapshot for CTO/CFO
 
 In less than 30 seconds:
 
 - **Cost Control:** Designed for self-hosted operation on VPS/Bare Metal to avoid linear SaaS cost growth.
-- **Security Baseline:** NIST-aligned hardening with zero-trust networking and auditable controls.
+- **Security Baseline:** Hardening mapped to NIST controls with private mesh networking (Tailscale) and auditable controls.
 - **Data Sovereignty:** Sensitive workloads stay in infrastructure you control.
 - **Cloud-Exit Ready:** Portable Ansible playbooks and provider-agnostic architecture reduce lock-in.
 - **Operational Predictability:** Pull-based management model and Make-driven runbooks reduce change risk.
 
 ---
 
-## FinOps Field Case Study
+## 💰 FinOps Field Case Study
 
 This project pattern has been applied to a real-world sovereign cloud-exit migration scenario focused on data sovereignty, security, and OpEx reduction.
 
@@ -106,24 +132,32 @@ This project pattern has been applied to a real-world sovereign cloud-exit migra
 
 ### Measured outcomes (reported case)
 
-| Metric                 | Before (SaaS Sprawl) | After (Sovereign Self-Hosted) | Impact                    |
-| ---------------------- | -------------------- | ----------------------------- | ------------------------- |
-| Annual Software OpEx   | $X (baseline)        | $0.3X                         | **-70%**                  |
-| Platform Uptime (Prod) | ~99.5%               | 99.8%                         | Higher reliability        |
-| Data Sovereignty       | 0%                   | 100%                          | Full control              |
-| Vendor Risk            | Critical             | Negligible                    | Supply-chain risk reduced |
+| Metric                 | Before (SaaS Sprawl) | After (Sovereign Self-Hosted)           | Impact                    |
+| ---------------------- | -------------------- | --------------------------------------- | ------------------------- |
+| Annual Software OpEx   | $X (baseline)        | $0.3X                                   | **-70%**                  |
+| Platform Uptime (Prod) | ~99.5%               | 99.8%                                   | Higher reliability        |
+| Data Sovereignty       | Third-party hosted   | Self-hosted on dedicated infrastructure | Direct control            |
+| Vendor Risk            | Critical             | Reduced                                 | Supply-chain risk reduced |
 
-> **Scope note:** This case study is a field implementation narrative and not a vendor benchmark report. Results depend on workload, architecture, and governance discipline.
+> **Scope note:** This case study is a field implementation narrative and not a vendor benchmark report. Results depend on workload, architecture, and governance discipline. Figures come from the reported case; supporting records are not published in this repository.
 
 ---
 
-## Field Validation Evidence
+## ✅ Validation Scope
 
-The platform architecture and hardening suite are **Production Ready**, validated across active production operations and staged topologies:
+Validated in production on up to 2 Brain and 10 Muscle nodes across Oracle Cloud, AWS, Azure and GCP, on AMD64 and ARM64. A scale test to 3 Brain and 30 Muscle is in progress and not yet confirmed.
 
-- **Production Reference Fleet**: 1 Management Node (`brain-1`) + 1 Compute Worker Node (`muscle-1`) in active operation.
-- **Multi-Node Staging & Lab Validation**: Multi-node cluster topology validated across 1 Brain + 2 Muscle nodes.
-- **Automated Verification**: Multi-layer Molecule verification suite (`L1_os_baseline`, `L2_compliance`, `L3_observability`, `L4_networking`, `backup`) tested on Debian 12 (`bookworm`) and Ubuntu 22.04 (`jammy`).
+### Tested
+
+- Up to 2 Brain and 10 Muscle nodes
+- Cloud providers: Oracle Cloud, AWS, Azure, GCP
+- Architectures: AMD64, ARM64
+- Operating systems: Debian 12, Ubuntu 22.04
+
+### Not tested or not confirmed
+
+- Scale test to 3 Brain and 30 Muscle nodes (in progress, not yet confirmed)
+- Any operating system other than Debian 12 and Ubuntu 22.04
 
 ### Deployment proof screenshots
 
@@ -133,15 +167,15 @@ The platform architecture and hardening suite are **Production Ready**, validate
 
 ---
 
-## Compliance & Standards
+## 📚 Compliance & Standards
 
 This repository is not just "NIST-themed". It includes implementation-grounded compliance references with auditable mappings and evidence workflows.
 
 ### Primary control coverage
 
 - **NIST SP 800-53:** AC-2, CM-7, SC-7, SI-4, AU-12, and SC-28 (partial for full disk encryption).
-- **NIST SP 800-207 (Zero Trust):** overlay-network control path, identity/tag-based access, and pull-based management pattern.
-- **CIS Level 1 (generic Ubuntu/Debian alignment):** SSH baseline, firewall posture, brute-force mitigation, and audit telemetry.
+- **NIST SP 800-207 (Zero Trust Architecture):** used as a reference for the Tailscale overlay design (identity/tag-based access, pull-based management). The project does not claim to implement a zero trust architecture.
+- **CIS Level 1 (mapped to generic Ubuntu/Debian benchmarks):** SSH baseline, firewall posture, brute-force mitigation, and audit telemetry.
 - **DORA/ENS contextual mapping:** documented as technical-functional alignment for resilience and governance discussions.
 
 ### Where to audit compliance details
@@ -153,7 +187,7 @@ This repository is not just "NIST-themed". It includes implementation-grounded c
 
 ---
 
-## Quick Start
+## ⚡ Quick Start
 
 ### Prerequisites
 
@@ -214,7 +248,7 @@ make run PLAYBOOK=playbooks/l3/stack.yml TAGS='l3-observability,stack'
 
 ---
 
-## Operations with Make
+## 🛠️ Operations with Make
 
 Make is the official command interface for this project. Day-to-day operations should run through Make targets.
 
@@ -253,7 +287,7 @@ Operational reference index:
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
 ### Simplified Tree
 
@@ -290,13 +324,13 @@ The role structure is intentionally separated so security controls, Docker orche
 
 ---
 
-## Docker & Deployment
+## 🐳 Docker & Deployment
 
 Docker is used for application stacks and observability services, not as the primary automation runtime.
 
 ### Deploy Applications
 
-All 8 application profiles (Chatwoot, Metabase, n8n, NocoDB, OpenWebUI, Twenty CRM, Uptime Kuma, FastAPI) deploy as Docker Compose stacks from structured profiles under `apps/`, rendered by the L6 runtime. Compose does not depend on Portainer (ADR-07): with the optional manager enabled (`enable_portainer: true`), the same stacks can be managed through Portainer's UI (Edge agent); with the default `enable_portainer: false`, a compose-only deploy needs zero `portainer_*` variables. See [ARCHITECTURE.md §Application Profiles](docs/architecture/ARCHITECTURE.md#application-profiles) for the full schema.
+All 8 application profiles (Chatwoot, Metabase, n8n, NocoDB, OpenWebUI, Twenty CRM, Uptime Kuma, FastAPI) deploy as Docker Compose stacks from structured profiles under `apps/`, rendered by the L6 runtime. Compose does not depend on Portainer (ADR-07): with the optional manager enabled (`enable_portainer: true`), the same stacks can be managed through Portainer's UI (Edge agent); with the default `enable_portainer: false`, a compose-only deploy needs no `portainer_*` variables. See [ARCHITECTURE.md §Application Profiles](docs/architecture/ARCHITECTURE.md#application-profiles) for the full schema.
 
 ### Security Notes
 
@@ -307,7 +341,7 @@ All 8 application profiles (Chatwoot, Metabase, n8n, NocoDB, OpenWebUI, Twenty C
 
 ---
 
-## Configuration & Secrets
+## 🔧 Configuration & Secrets
 
 This project does not require a root `.env.example`. Runtime secrets are encrypted with SOPS + age and loaded transparently by the `community.sops` vars plugin from `group_vars/all/secrets.sops.yml` and `group_vars/all/managers/portainer.sops.yml` (the Tailscale auth/ACL keys remain in the Ansible Vault until expiry). Application-specific configuration is operator-managed via `apps/<name>/.env`, templated from `apps/<name>/.env.example`. See [ARCHITECTURE.md §App Profiles](docs/architecture/ARCHITECTURE.md#application-profiles) for the profile schema.
 
@@ -343,15 +377,26 @@ Apps deploy as Compose stacks (optionally managed via Portainer). See [OPERATION
 
 ---
 
-## Validation & Quality Gates
+## 🧪 Tests
 
-The repository is validated through uv-managed tooling and Ansible-native checks.
+This project enforces end-to-end quality and compliance verification through a multi-tiered test pipeline spanning static validation, pre-commit hygiene, idempotency checks, and automated role/layer integration testing via **Molecule**:
+
+### 1. Quality Gates & Linting
+
+The repository is validated through uv-managed tooling and Ansible-native checks. Validate syntax, role structure, YAML formatting, and GitHub Actions security workflows locally:
 
 ```bash
+# Bootstrap toolchain and pre-commit hooks
+make setup
 make sync
 make install-collections
 make check-toolchain
+
+# Run strict linting suite (yamllint + ansible-lint 26.6.0 + zizmor)
+make lint
 make lint PLAYBOOK=playbooks/site.yml
+
+# Execute all pre-commit hooks
 make precommit-run
 ```
 
@@ -363,27 +408,6 @@ Current quality gates include:
 - Secret detection with a tracked baseline.
 
 > **Operational note:** `make lint` is intentionally strict and should be used before changes are promoted to shared environments.
-
----
-
-## 🧪 Tests
-
-This project enforces end-to-end quality and compliance verification through a multi-tiered test pipeline spanning static validation, pre-commit hygiene, idempotency checks, and automated role/layer integration testing via **Molecule**:
-
-### 1. Quality Gates & Linting
-
-Validate syntax, role structure, YAML formatting, and GitHub Actions security workflows locally:
-
-```bash
-# Bootstrap toolchain and pre-commit hooks
-make setup
-
-# Run strict linting suite (yamllint + ansible-lint 26.6.0 + zizmor)
-make lint
-
-# Execute all pre-commit hooks
-make precommit-run
-```
 
 ### 2. Integration Testing with Molecule
 
@@ -405,6 +429,17 @@ make test-layer LAYER=L4_networking
 
 - **Pull Request Gates:** [GitHub Actions](.github/workflows/ci.yml) validates playbook syntax, role directories, `ansible-lint`, `yamllint`, `gitleaks` credential scans, and workflow security audits via `zizmor` on every commit.
 - **Security Audit Gates:** A dedicated [security-audit.yml](.github/workflows/security-audit.yml) workflow runs on PRs and release tags (`v*`), executing credential pattern scans, SOPS value leak checks, and dependency vulnerability scans (`uv run pip-audit --path .venv`).
+
+---
+
+## 📖 Documentation
+
+For the full documentation index including architecture, compliance, operations, and project docs, see [docs/README.md](docs/README.md).
+
+- [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) - System design and security layers
+- [docs/operations/OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md) - Operational command reference
+- [docs/compliance/COMPLIANCE-MAPPING-STATUS.md](docs/compliance/COMPLIANCE-MAPPING-STATUS.md) - Compliance framework status and mapping
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guide
 
 ---
 
@@ -432,34 +467,16 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 
 ## 📄 License
 
-Copyright © 2026 Miguel Lozano | Developmi. All rights reserved.
+Copyright (c) 2026 Miguel Lozano | Developmi
 Licensed under the [MIT License](./LICENSE).
 
 ---
 
-## Documentation Guide
-
-For the full documentation index including architecture, compliance, operations, and project docs, see [docs/README.md](docs/README.md).
-
----
-
-## Contact & Support
+## 📬 Contact & Support
 
 - **Maintained by:** Miguel Lozano | Developmi
-- **Role:** Cloud & Infrastructure Engineer | FinOps & Bare Metal Specialist | AI Sovereignty Strategist under NIST/DORA Standards
+- **Role:** Infrastructure & DevSecOps Consultant
 - **Philosophy:** _Security is not a feature; it is the baseline._
 - **Website:** [Developmi](https://developmi.com)
 - **GitHub:** [Miguel-DevOps](https://github.com/Miguel-DevOps)
 - **LinkedIn:** [Miguel Lozano](https://www.linkedin.com/in/miguel-dev-ops)
-
----
-
-© 2026 Miguel Lozano | Developmi. All rights reserved.
-
-## Related Documents
-
-- [docs/README.md](docs/README.md) - Documentation index
-- [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) - System design and security layers
-- [docs/operations/OPERATIONS_RUNBOOK.md](docs/operations/OPERATIONS_RUNBOOK.md) - Operational command reference
-- [docs/compliance/COMPLIANCE-MAPPING-STATUS.md](docs/compliance/COMPLIANCE-MAPPING-STATUS.md) - Compliance framework status and mapping
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guide (redirect)

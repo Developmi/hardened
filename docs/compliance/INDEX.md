@@ -22,7 +22,7 @@ The Single Source of Truth for all framework mappings, control definitions, and 
 
 > 📘 **[COMPLIANCE-MAPPING-STATUS.md](COMPLIANCE-MAPPING-STATUS.md)**
 
-Please refer to that document for the complete coverage matrix and implementation status of **NIST SP 800-53**, **NIST SP 800-207 (Zero Trust)**, **CIS Benchmarks**, **DORA**, **ENS**, **MITRE ATT&CK**, and **SOC 2 Type II**.
+Please refer to that document for the complete coverage matrix and implementation status of **NIST SP 800-53**, **NIST SP 800-207 (Zero Trust Architecture)**, **CIS Benchmarks**, **DORA**, **ENS**, **MITRE ATT&CK**, and **SOC 2 Type II**.
 
 ---
 

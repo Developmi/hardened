@@ -38,21 +38,21 @@ This master document serves as the Single Source of Truth (SSOT) and consolidate
 
 The suite provides technical implementation controls and evidence generation for the following frameworks:
 
-| Framework           | Version / Revision                         | Status                           | Applicable Controls / Scope                                                        | Controls Covered | Controls Pending | Evidence Collection    |
-| ------------------- | ------------------------------------------ | -------------------------------- | ---------------------------------------------------------------------------------- | ---------------- | ---------------- | ---------------------- |
-| **NIST SP 800-53**  | Rev 5                                      | Fully mapped / Implemented       | AC-2, CM-7, SC-7, SI-4, AU-12, SC-28                                               | 5/6              | SC-28 (partial)  | Yes - per control      |
-| **NIST SP 800-207** | Final                                      | Implemented                      | Zero Trust Architecture overlay transport, identity/policy-based segmentation      | -                | -                | -                      |
-| **CIS Benchmarks**  | Ubuntu 22.04 LTS v2.0.0 / Debian 12 v1.0.0 | Mapped per Ansible role          | SSH hardening, UFW/nftables posture, sysctl tuning, filesystem permissions         | -                | -                | Yes - role-level       |
-| **DORA**            | EU 2022/2554                               | Mapped at architectural level    | ICT risk management, incident reporting, digital operational resilience testing    | -                | -                | No                     |
-| **ENS**             | RD 311/2022                                | Technical-functional equivalence | Medium category: access control (op.acc), protection (op.exp), monitoring (op.mon) | -                | -                | Yes - via NIST overlap |
-| **MITRE ATT&CK**    | v15                                        | Defensive controls mapped        | Defense evasion (T1562), privilege escalation (T1068), persistence (T1547)         | -                | -                | -                      |
-| **SOC 2 Type II**   | -                                          | Stub - not yet implemented       | CC6.1, CC6.6, CC7.1, CC7.2 (overlapping with NIST controls)                        | 0                | All              | No                     |
+| Framework           | Version / Revision                         | Status                           | Applicable Controls / Scope                                                                                      | Controls Covered | Controls Pending | Evidence Collection    |
+| ------------------- | ------------------------------------------ | -------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ---------------- | ---------------- | ---------------------- |
+| **NIST SP 800-53**  | Rev 5                                      | Mapped / Implemented             | AC-2, CM-7, SC-7, SI-4, AU-12, SC-28                                                                             | 5/6              | SC-28 (partial)  | Yes - per control      |
+| **NIST SP 800-207** | Final                                      | Reference                        | Zero Trust Architecture; used as reference for Tailscale overlay design (not claimed as zero trust architecture) | -                | -                | -                      |
+| **CIS Benchmarks**  | Ubuntu 22.04 LTS v2.0.0 / Debian 12 v1.0.0 | Mapped per Ansible role          | SSH hardening, UFW/nftables posture, sysctl tuning, filesystem permissions                                       | -                | -                | Yes - role-level       |
+| **DORA**            | EU 2022/2554                               | Mapped at architectural level    | ICT risk management, incident reporting, digital operational resilience testing                                  | -                | -                | No                     |
+| **ENS**             | RD 311/2022                                | Technical-functional equivalence | Medium category: access control (op.acc), protection (op.exp), monitoring (op.mon)                               | -                | -                | Yes - via NIST overlap |
+| **MITRE ATT&CK**    | v15                                        | Defensive controls mapped        | Defense evasion (T1562), privilege escalation (T1068), persistence (T1547)                                       | -                | -                | -                      |
+| **SOC 2 Type II**   | -                                          | Stub - not yet implemented       | CC6.1, CC6.6, CC7.1, CC7.2 (overlapping with NIST controls)                                                      | 0                | All              | No                     |
 
 ### 2.1 Mapping Status Definitions
 
 | Status                               | Definition                                                                                        |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| **Fully mapped / Implemented**       | Every applicable control has a corresponding Ansible role with task tags and evidence generation  |
+| **Mapped / Implemented**             | Every applicable control has a corresponding Ansible role with task tags and evidence generation  |
 | **Mapped per Ansible role**          | Controls are implemented by specific roles; evidence is role-level, not framework-level           |
 | **Mapped at architectural level**    | The platform design addresses the framework requirements; specific controls may not be enumerated |
 | **Technical-functional equivalence** | Controls are satisfied by equivalent technical measures, not 1:1 mapping                          |
@@ -93,12 +93,14 @@ Evidence output follows a per-control hierarchy under `/srv/evidence/nist/<contr
 
 ### 3.2 NIST SP 800-207 (Zero Trust Architecture)
 
+Used as a reference for the Tailscale overlay design (identity/tag-based access, pull-based management). The project does not claim to implement a zero trust architecture.
+
 - Overlay-only transport is enforced in non-bootstrap playbooks (`playbooks/l6/engine.yml`, `playbooks/l3/exporters.yml`, `playbooks/ops/nuke.yml`) by asserting `ansible_host` belongs to the management subnet.
 - Identity and policy-based segmentation are implemented via Tailscale tags and ACL automation.
 - Portainer Edge Agent uses a pull model that avoids inbound management ports on managed nodes.
 
 > [!NOTE]
-> Reference: [NIST SP 800-207](https://csrc.nist.gov/pubs/sp/800/207/final)
+> Reference: [NIST SP 800-207 (Zero Trust Architecture)](https://csrc.nist.gov/pubs/sp/800/207/final)
 
 ### 3.3 NIST SP 800-171 (Controlled Unclassified Information)
 

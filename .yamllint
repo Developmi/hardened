@@ -1,4 +1,4 @@
-# yamllint configuration for NIST-Compliant Hardening Suite
+# yamllint configuration for Developmi Hardened
 ---
 extends: default
 

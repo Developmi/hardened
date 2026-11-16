@@ -13,7 +13,7 @@ repo: github.com/Developmi/hardened
 # Architecture Overview - Developmi Hardened v6.0.0
 
 The Developmi Hardened is a multi-layer Linux hardening and application deployment framework built on Ansible.
-It transforms vanilla Debian/Ubuntu servers into NIST 800-53 compliant bastion hosts
+It transforms vanilla Debian/Ubuntu servers into bastion hosts mapped to NIST 800-53
 with a 7-layer architecture that cleanly separates infrastructure provisioning (L0, private), OS hardening (L1-L4),
 application profiles (L5), and runtime adapters (L6).
 
@@ -167,17 +167,17 @@ Layers MUST NOT reach across trust boundaries:
 
 ### OS Capability Table
 
-| Capability            | Ubuntu 22.04 (amd64) | Ubuntu 22.04 (arm64) | Ubuntu 24.04 (amd64) | Ubuntu 24.04 (arm64) | Debian 11 (amd64)   | Debian 11 (arm64)   | Debian 12 (amd64)   | Debian 12 (arm64)   |
-| --------------------- | -------------------- | -------------------- | -------------------- | -------------------- | ------------------- | ------------------- | ------------------- | ------------------- |
-| Package Manager       | ✅ apt               | ✅ apt               | ✅ apt               | ✅ apt               | ✅ apt              | ✅ apt              | ✅ apt              | ✅ apt              |
-| Update/Hold Policies  | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             | ✅ Full             | ✅ Full             |
-| Auto-upgrade Checker  | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             | ✅ Full             | ✅ Full             |
-| NIST 800-53 Hardening | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             | ✅ Full             | ✅ Full             |
-| CIS Benchmarks        | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full              | ⚠️ Minor delta      | ⚠️ Minor delta      | ⚠️ Minor delta      | ⚠️ Minor delta      |
-| Firewall              | ✅ ufw               | ✅ ufw               | ✅ ufw               | ✅ ufw               | ⚠️ nftables wrapper | ⚠️ nftables wrapper | ⚠️ nftables wrapper | ⚠️ nftables wrapper |
-| CrowdSec Enforcement  | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             | ✅ Full             | ✅ Full             |
-| fail2ban              | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             | ✅ Full             | ✅ Full             |
-| Kernel Hardening      | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             | ✅ Full             | ✅ Full             |
+| Capability            | Ubuntu 22.04 (amd64) | Ubuntu 22.04 (arm64) | Debian 12 (amd64)   | Debian 12 (arm64)   |
+| --------------------- | -------------------- | -------------------- | ------------------- | ------------------- |
+| Package Manager       | ✅ apt               | ✅ apt               | ✅ apt              | ✅ apt              |
+| Update/Hold Policies  | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             |
+| Auto-upgrade Checker  | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             |
+| NIST 800-53 Hardening | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             |
+| CIS Benchmarks        | ✅ Full              | ✅ Full              | ⚠️ Minor delta      | ⚠️ Minor delta      |
+| Firewall              | ✅ ufw               | ✅ ufw               | ⚠️ nftables wrapper | ⚠️ nftables wrapper |
+| CrowdSec Enforcement  | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             |
+| fail2ban              | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             |
+| Kernel Hardening      | ✅ Full              | ✅ Full              | ✅ Full             | ✅ Full             |
 
 #### Architecture Columns (AMD64 / ARM64 - Ampere)
 
@@ -190,8 +190,8 @@ Layers MUST NOT reach across trust boundaries:
 
 | Delta                             | Affected OS        | Resolution                                                                                                                                                                                                                                             |
 | --------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Firewall backend: ufw vs nftables | Debian 11/12       | Variable dispatcher: `os_firewall_backend: "{{ 'nftables' if ansible_os_family == 'Debian' and ansible_distribution_major_version == '12' else 'ufw' }}"` - role dispatches via `ansible.builtin.include_tasks: "{{ os_firewall_backend }}_rules.yml"` |
-| CIS minor deltas                  | Debian 11/12       | Documented in `docs/compliance/NIST/INDEX.md` - Debian CIS benchmarks have minor structural differences from Ubuntu. Tagged `cis,debian-delta`.                                                                                                        |
+| Firewall backend: ufw vs nftables | Debian 12          | Variable dispatcher: `os_firewall_backend: "{{ 'nftables' if ansible_os_family == 'Debian' and ansible_distribution_major_version == '12' else 'ufw' }}"` - role dispatches via `ansible.builtin.include_tasks: "{{ os_firewall_backend }}_rules.yml"` |
+| CIS minor deltas                  | Debian 12          | Documented in `docs/compliance/NIST/INDEX.md` - Debian CIS benchmarks have minor structural differences from Ubuntu. Tagged `cis,debian-delta`.                                                                                                        |
 | ARM64 image availability          | All                | Every app profile MUST declare `supported_arch`. Playbook validates host arch ∈ profile's `supported_arch` before deploy. All base OS + infra components (Docker, Caddy, CrowdSec, Tailscale, Portainer) are multi-arch verified.                      |
 | OCI killswitch                    | Ubuntu 22.04 (OCI) | Required for Oracle Cloud nodes only. Detected at `gather_facts` time, dispatched conditionally. Not applicable to Debian or non-OCI targets.                                                                                                          |
 
@@ -237,7 +237,7 @@ hardening_profile: server
 
 - **`server`**: Full server hardening - in-kernel nftables firewall (`policy drop`), fail2ban brute-force protection, CrowdSec collaborative threat intelligence, VictoriaMetrics/Grafana observability stack, Restic backup automation.
 
-The dispatcher is configured per host class in `group_vars/{brain,muscle}/main.yml` and defaults globally to `server` in `group_vars/all/main.yml`. Developer and operator workstation security follows a Zero Trust model outside Ansible management (see [DEVELOPER_WORKSTATION_GUIDE.md](../security/DEVELOPER_WORKSTATION_GUIDE.md)).
+The dispatcher is configured per host class in `group_vars/{brain,muscle}/main.yml` and defaults globally to `server` in `group_vars/all/main.yml`. Developer and operator workstation security follows a private mesh model outside Ansible management (see [DEVELOPER_WORKSTATION_GUIDE.md](../security/DEVELOPER_WORKSTATION_GUIDE.md)).
 
 ---
 
@@ -250,7 +250,7 @@ The dispatcher is configured per host class in `group_vars/{brain,muscle}/main.y
 | 3   | **Principle 3: Automation beats documentation**           | Document by executing. Manual runbooks are code smells - automate first, document second.                                                               | Pre-flight assertions validate secrets and `supported_arch` before deploy. Zero manual validation steps. Compliance evidence is auto-collected to `/srv/evidence/nist/<control>/`.                                                                        |
 | 4   | **Principle 4: Sovereignty beats convenience**            | Keep control of your data and infrastructure. Avoid vendor lock-in that erodes autonomy.                                                                | Variable-driven OS dispatch (`os_firewall_backend`) instead of vendor-specific conditionals. Mandatory AMD64/ARM64 compatibility table prevents architecture lock-in. Tailscale OAuth-only ACL automation - no long-lived API tokens.                     |
 | 5   | **Principle 5: Evidence beats assertion**                 | Every compliance claim must be backed by machine-collected evidence, not human statements.                                                              | NIST 800-53 controls trace to Ansible task tags → evidence files at `/srv/evidence/nist/<control>/`. `compliance.yml` playbook auto-collects evidence. `compliance/evidence/EVIDENCE_MODEL.md` documents the chain.                                       |
-| 6   | **Principle 6: Boring technology beats novel technology** | Prefer proven, widely-adopted tools. Novelty adds risk, not value.                                                                                      | Ansible (agentless, YAML, 10+ years). Docker Compose (every operator knows it). PostgreSQL (battle-tested). Caddy (simpler than nginx for reverse proxy). No custom DSLs, no framework lock-in.                                                           |
+| 6   | **Principle 6: Boring technology beats novel technology** | Prefer proven, widely-adopted tools. Novelty adds risk, not value.                                                                                      | Ansible (agentless, YAML, 10+ years). Docker Compose (every operator knows it). PostgreSQL (proven, mature). Caddy (simpler than nginx for reverse proxy). No custom DSLs, no framework lock-in.                                                          |
 | 7   | **Principle 7: One operator, one runbook, 03:00**         | A single tired operator at 3 AM must understand and fix any issue with ONE document.                                                                    | Six-layer variable hierarchy makes overrides discoverable by path alone. Tag conventions separate functional, compliance, and layer concerns. Layer boundaries are explicit - an app profile never reaches into host config.                              |
 | 8   | **Principle 8: Layers don't reach across boundaries**     | Each layer promises a contract. It never bypasses the layer below or above it.                                                                          | L5 (app profiles) defines `what` to run; L6 (runtime) defines `how`. Profile schema contains zero Compose-specific directives. Engine (Compose) and Manager (Portainer) are independent axes - removing Portainer doesn't break Compose stacks.           |
 | 9   | **Principle 9: Open core, not open-washing**              | L1–L6 are genuinely OpenSource. L0 (provisioning, cloud) is private infrastructure - clearly documented as out of scope, never teased as "coming soon." | L0 documented as "Commercial Infra (IaC) - outside OpenSource scope, reference only." `apps/fastapi/` marked "community-provided" with explicit user config requirements. No hidden enterprise tiers.                                                     |
@@ -311,8 +311,6 @@ Target Host: /srv/evidence/nist/<control>/
 | ------------------------------ | ------------ | -------------- | ----------------------------------------------------------------------------------------------- |
 | **OS - Debian 12**             | ✅ Supported | ✅ Supported   | ARM64 tested on Oracle Ampere A1 instances                                                      |
 | **OS - Ubuntu 22.04**          | ✅ Supported | ✅ Supported   | ARM64 tested on Oracle Ampere A1 instances                                                      |
-| **OS - Ubuntu 24.04**          | ✅ Supported | ✅ Supported   | ARM64 tested on Oracle Ampere A1 instances                                                      |
-| **OS - Debian 11**             | ✅ Supported | ✅ Supported   | ARM64 tested on Oracle Ampere A1 instances                                                      |
 | **Docker Engine**              | ✅ Supported | ✅ Supported   | Same version on both architectures; `docker.com` apt repo is multi-arch                         |
 | **Portainer BE**               | ✅ Supported | ✅ Supported   | Official multi-arch Docker image                                                                |
 | **Caddy**                      | ✅ Supported | ✅ Supported   | Official binary is multi-arch (Go-compiled)                                                     |
@@ -374,7 +372,7 @@ Determined by `group_vars/{brain,muscle}/main.yml`. A host's inventory group mem
 
 ### Operational Scale & Sizing Boundaries
 
-This repository is engineered under the **"Boring is Better"** philosophy: providing enterprise-grade security hardening (NIST SP 800-53, CIS OS/Docker benchmarks, kernel confinement, Zero Trust networking via Tailscale, and automated Restic disaster recovery) directly on Bare Metal hosts or VPS instances without requiring Kubernetes.
+This repository is engineered under the **"Boring is Better"** philosophy: providing security hardening (mapped to NIST SP 800-53 and CIS benchmarks, kernel confinement, private mesh networking via Tailscale, and automated Restic disaster recovery) directly on Bare Metal hosts or VPS instances without requiring Kubernetes.
 
 #### Hardware Profiles & Node Allocation
 
@@ -397,7 +395,7 @@ Routing topology and secrets adhere to strict separation of concerns:
 
 - **Routing Catalog** (`inventory/group_vars/all/ingress.yml`): Plain YAML catalog of domains, upstreams, headers, and security profiles. Ignored by `.gitignore` to prevent leaking private client infrastructure in open-source environments (template provided in `ingress.yml.example`).
 - **Cryptographic Secrets** (`inventory/group_vars/all/secrets.sops.yml`): Strictly reserved for sensitive credentials (TLS private keys in `cloudflare_origin_certs`, `caddy_ui_token`, R2 access keys).
-- **Ingress Template** (`roles/L4_networking/caddy/templates/Caddyfile.j2`): 100% data-driven, version-controlled Jinja2 template with zero hardcoded values, featuring automatic global `metrics` export and per-service WAF/TLS client routing.
+- **Ingress Template** (`roles/L4_networking/caddy/templates/Caddyfile.j2`): data-driven, version-controlled Jinja2 template without hardcoded values, featuring automatic global `metrics` export and per-service WAF/TLS client routing.
 
 ---
 

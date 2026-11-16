@@ -77,7 +77,7 @@ external prerequisite.
 
 ### Provides To
 
-- **L1 (OS Baseline)** - running hosts with SSH access, OS pre-installed (Ubuntu 22.04/24.04, Debian 11/12), architecture declared.
+- **L1 (OS Baseline)** - running hosts with SSH access, OS pre-installed (Debian 12, Ubuntu 22.04), architecture declared.
 
 ### Trust Level
 
@@ -135,7 +135,7 @@ L1 MUST detect the host architecture (amd64/arm64) and make it available as
 
 ### Depends On
 
-- **L0** - a running host with SSH access, pre-installed OS (Ubuntu 22.04/24.04, Debian 11/12).
+- **L0** - a running host with SSH access, pre-installed OS (Debian 12, Ubuntu 22.04).
 
 ### Provides To
 
@@ -481,7 +481,7 @@ installation and configuration (`roles/L6_runtime/docker_compose/`), compose ren
 
 The Engine (Compose default, Swarm/K3s future) and Manager (none or Portainer
 BE) are **independent axes**. Compose MUST NEVER depend on Portainer. A
-deployment without Portainer is 100% valid and functional.
+deployment without Portainer is valid and functional.
 
 L6 also owns `roles/L6_runtime/backup/` - which protects both runtime state (Portainer
 configs, compose state, manager metadata) and application data (DB dumps, app configs).

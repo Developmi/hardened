@@ -1,4 +1,4 @@
-# ansible-lint configuration for NIST-Compliant Hardening Suite
+# ansible-lint configuration for Developmi Hardened
 ---
 profile: moderate
 

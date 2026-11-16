@@ -26,7 +26,7 @@ sets the server-grade hardening baseline:
 | ---------- | -------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Server** | `server` | brain, muscle | Full hardening: in-kernel nftables firewall (`policy drop`), fail2ban 1h bantime, CrowdSec enforcement, observability stack, and Restic backups enabled |
 
-The dispatcher is set per host class in `inventory/group_vars/{brain,muscle}/main.yml`. Developer and operator workstation security follows a Zero Trust baseline outside Ansible management (see [DEVELOPER_WORKSTATION_GUIDE.md](DEVELOPER_WORKSTATION_GUIDE.md)).
+The dispatcher is set per host class in `inventory/group_vars/{brain,muscle}/main.yml`. Developer and operator workstation security follows a private mesh baseline outside Ansible management (see [DEVELOPER_WORKSTATION_GUIDE.md](DEVELOPER_WORKSTATION_GUIDE.md)).
 
 ### Tag Conventions Used in Matrix
 

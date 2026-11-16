@@ -1,15 +1,15 @@
 # Developer Workstation Security Baseline
 
 > **Security Standard** - Operator & Developer Endpoint Baseline for `developmi-platform`
-> **Model**: Zero Trust (NIST SP 800-207) | **Scope**: macOS, Linux, Windows (WSL2)
+> **Model**: Private Mesh (reference: NIST SP 800-207 Zero Trust Architecture) | **Scope**: macOS, Linux, Windows (WSL2)
 
 ---
 
-## 1. Architectural Philosophy: Zero Trust Over Endpoint Push
+## 1. Architectural Philosophy: Private Mesh Over Endpoint Push
 
 In `developmi-platform`, server infrastructure never trusts client workstations by default, and workstations are **not** managed via Ansible push playbooks over SSH. Laptops sleep, roam dynamic networks, and run diverse operating systems where server-grade kernel drops (`policy drop`, aggressive sysctl) break local developer experience (Docker Desktop, local test ports, debuggers).
 
-Instead, security is enforced through **Zero Trust Network Access (ZTNA)** and **Hardware-Backed Cryptographic Identity**:
+Instead, security is enforced through **Private Mesh Network Access (Tailscale)** and **Hardware-Backed Cryptographic Identity**:
 
 - The server cluster assumes client devices may be untrusted or compromised.
 - All access to server control planes and SSH is gated behind **Tailscale mesh ACLs**, MFA, and hardware security keys.

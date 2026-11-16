@@ -22,13 +22,13 @@ Terms defining how nodes are classified, hardened, and operated within the infra
 
 ### Core Terminology
 
-| Term                  | Definition                                                                                                                                                       |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **make target**       | A named Makefile command (e.g., `make deploy`, `make nuke`). The primary operator interface.                                                                     |
-| **overlay transport** | The policy requiring Tailscale VPN for non-bootstrap playbook operations (e.g., `engine.yml`, `exporters.yml`, `nuke.yml`).                                      |
-| **phase**             | A deployment stage in the Makefile orchestration (Phase 0 through Phase 7).                                                                                      |
-| **ponytail mode**     | Lazy/YAGNI-first development mode. Enforces: stdlib before dependency, deletion over addition, shortest working diff.                                            |
-| **Zero Trust**        | Security model where no actor is trusted by default. Enforced via Tailscale ACLs, overlay-only transport, and pull-based management. Aligned to NIST SP 800-207. |
+| Term                  | Definition                                                                                                                                                                                    |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **make target**       | A named Makefile command (e.g., `make deploy`, `make nuke`). The primary operator interface.                                                                                                  |
+| **overlay transport** | The policy requiring Tailscale VPN for non-bootstrap playbook operations (e.g., `engine.yml`, `exporters.yml`, `nuke.yml`).                                                                   |
+| **phase**             | A deployment stage in the Makefile orchestration (Phase 0 through Phase 7).                                                                                                                   |
+| **ponytail mode**     | Lazy/YAGNI-first development mode. Enforces: stdlib before dependency, deletion over addition, shortest working diff.                                                                         |
+| **Private Mesh**      | Network access model enforced via Tailscale ACLs, overlay-only transport, and pull-based management. Design informed by NIST SP 800-207 principles; not claimed as a zero trust architecture. |
 
 ### Host Classes & Profiles
 
@@ -134,7 +134,7 @@ SOPS + age (`inventory/group_vars/all/secrets.sops.yml`, `make sops-*`) is the s
 | **NIST control**   | Compliance | A specific security control from NIST SP 800-53 (e.g., AC-2, SC-7).                         |
 | **OpenTofu**       | Toolchain  | Open-source infrastructure-as-code tool (Terraform fork) used for Layer 0 provisioning.     |
 | **Portainer**      | Toolchain  | Docker management UI using a pull-based Edge Agent architecture (zero open ports).          |
-| **Tailscale**      | Toolchain  | WireGuard-based zero-trust VPN mesh. Provides ACL-driven access with NAT traversal.         |
+| **Tailscale**      | Toolchain  | WireGuard-based private VPN mesh. Provides ACL-driven access with NAT traversal.            |
 | **uv**             | Toolchain  | Python package manager. Used for all toolchain operations (sync, lint, playbook execution). |
 
 ### Evidence Paths

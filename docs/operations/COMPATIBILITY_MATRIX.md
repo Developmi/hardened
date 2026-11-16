@@ -22,22 +22,16 @@ The matrix below reflects field-validated execution. Each platform has been depl
 
 ### Tested Platforms & Status
 
-| OS / Distribution | Codename | Arch  | Status                 | Verified Hosts | Provider      |
-| :---------------- | :------- | :---- | :--------------------- | :------------- | :------------ |
-| Ubuntu 22.04      | jammy    | amd64 | ✅ Supported           | brain & muscle | Hetzner       |
-| Ubuntu 22.04      | jammy    | arm64 | ✅ Supported           | brain & muscle | Oracle Ampere |
-| Ubuntu 24.04      | noble    | amd64 | ✅ Partially Supported | brain & muscle | Hetzner       |
-| Ubuntu 24.04      | noble    | arm64 | ✅ Partially Supported | brain & muscle | Oracle Ampere |
-| Debian 12         | bookworm | amd64 | ✅ Supported           | brain & muscle | Hetzner       |
-| Debian 12         | bookworm | arm64 | ✅ Supported           | brain & muscle | Oracle Ampere |
-| Debian 13         | trixie   | amd64 | 🔲 Planned             | brain & muscle | Hetzner       |
-| Debian 13         | trixie   | arm64 | 🔲 Planned             | brain & muscle | Oracle Ampere |
+| OS / Distribution | Codename | Arch  | Status       | Verified Hosts | Provider      |
+| :---------------- | :------- | :---- | :----------- | :------------- | :------------ |
+| Ubuntu 22.04      | jammy    | amd64 | ✅ Supported | brain & muscle | Hetzner       |
+| Ubuntu 22.04      | jammy    | arm64 | ✅ Supported | brain & muscle | Oracle Ampere |
+| Debian 12         | bookworm | amd64 | ✅ Supported | brain & muscle | Hetzner       |
+| Debian 12         | bookworm | arm64 | ✅ Supported | brain & muscle | Oracle Ampere |
 
 **Status Legend:**
 
-- **✅ Supported:** Full playbook suite validated; idempotent and production-ready.
-- **✅ Partially Supported:** Core deployment path validated (`brain` and `muscle` roles tested successfully), but not every optional stack or edge scenario has completed validation.
-- **🔲 Planned:** Repository mappings and package sources exist, but full validation has not yet been completed.
+- **✅ Supported:** Full playbook suite validated; idempotent (see validated scope in README).
 - **⛔ Blocked:** Known incompatibility prevents successful deployment.
 
 ### OS Attributes & EOL Target Dates
@@ -51,14 +45,13 @@ _(Note: Both distributions use AppArmor as the default security module.)_
 
 ### Unsupported / Not Actively Tested
 
-- **Ubuntu 20.04 (focal):** End of standard support lifecycle and not aligned with current hardening targets.
-- **Debian 11 (bullseye):** Legacy compatibility may exist, but active validation and maintenance are not planned.
+- Any operating system other than Debian 12 and Ubuntu 22.04 is not supported and not tested.
 
 ---
 
 ## 2. Architecture Support (AMD64 & ARM64)
 
-Both major Linux server architectures (amd64 and arm64) are fully supported. The playbooks rely entirely on Ansible fact gathering for distribution, release codename, architecture, and kernel information, keeping the deployment flow architecture-agnostic. No architecture-specific playbook branching is required outside repository selection logic.
+Both major Linux server architectures (amd64 and arm64) are supported. The playbooks rely entirely on Ansible fact gathering for distribution, release codename, architecture, and kernel information, keeping the deployment flow architecture-agnostic. No architecture-specific playbook branching is required outside repository selection logic.
 
 ### App Profile Pre-Flight Validation (L5)
 
